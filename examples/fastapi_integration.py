@@ -54,7 +54,7 @@ DEMO_HTML = """<!DOCTYPE html>
       display: block;
       width: 180px;
       height: auto;
-      margin: 0 auto 8px;
+      margin: 0 auto 12px;
     }
 
     h1 {
@@ -70,6 +70,7 @@ DEMO_HTML = """<!DOCTYPE html>
       color: #555;
       margin-bottom: 32px;
       line-height: 1.6;
+      text-align: center;
     }
 
     .input-group { margin-bottom: 16px; }
