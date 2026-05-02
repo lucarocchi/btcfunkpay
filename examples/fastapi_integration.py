@@ -104,6 +104,36 @@ DEMO_HTML = """<!DOCTYPE html>
       line-height: 1;
     }
 
+    .currency-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .currency-row label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    #currency-select {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 13px;
+      color: #111;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+      flex: 1;
+    }
+    #currency-select:focus { border-color: #f7931a; }
+
     button {
       width: 100%;
       background: #f7931a;
@@ -250,9 +280,21 @@ DEMO_HTML = """<!DOCTYPE html>
       <input id="amount-sat" type="number" placeholder="satoshis" min="1">
     </div>
     <div class="field-sep">⇅</div>
+    <div class="currency-row">
+      <label>Currency</label>
+      <select id="currency-select">
+        <option value="USD">USD $</option>
+        <option value="EUR">EUR €</option>
+        <option value="GBP">GBP £</option>
+        <option value="JPY">JPY ¥</option>
+        <option value="CAD">CAD C$</option>
+        <option value="CHF">CHF Fr</option>
+        <option value="AUD">AUD A$</option>
+      </select>
+    </div>
     <div class="field-wrap">
-      <span class="field-icon usd">$</span>
-      <input id="amount-usd" type="number" placeholder="USD" min="0" step="0.01">
+      <span class="field-icon usd" id="fiat-icon">$</span>
+      <input id="amount-fiat" type="number" placeholder="amount" min="0" step="0.01">
     </div>
 
     <button type="submit" id="submit-btn" disabled>Pay</button>
@@ -288,11 +330,30 @@ DEMO_HTML = """<!DOCTYPE html>
 <script>
   const MIN_SAT = 1000;  // configurable minimum
 
+  const CURRENCY_SYMBOLS = {
+    USD: '$', EUR: '€', GBP: '£', JPY: '¥', CAD: 'C$', CHF: 'Fr', AUD: 'A$',
+  };
+  const FIAT_DECIMALS = { JPY: 0 };
+
   let paymentId = null;
   let pollTimer = null;
   let currentAddress = '';
-  let btcPriceUsd = null;
+  let allPrices = {};
   let updatingFrom = null;
+
+  function selectedCurrency() {
+    return document.getElementById('currency-select').value;
+  }
+
+  function selectedPrice() {
+    return allPrices[selectedCurrency()] || null;
+  }
+
+  function updateFiatIcon() {
+    const sym = CURRENCY_SYMBOLS[selectedCurrency()] || selectedCurrency();
+    document.getElementById('fiat-icon').textContent = sym;
+    document.getElementById('amount-fiat').placeholder = selectedCurrency();
+  }
 
   function updatePayBtn() {
     const sat = parseInt(document.getElementById('amount-sat').value) || 0;
@@ -307,38 +368,52 @@ DEMO_HTML = """<!DOCTYPE html>
     overpaid:  'Payment confirmed (overpaid)',
   };
 
-  // fetch BTC price once on load
+  // fetch all BTC prices once on load
   async function fetchPrice() {
     try {
       const r = await fetch('https://mempool.space/api/v1/prices');
-      const d = await r.json();
-      btcPriceUsd = d.USD;
+      allPrices = await r.json();
     } catch (_) {}
   }
   fetchPrice();
 
-  // sat → USD
+  // currency change: re-convert from sat side
+  document.getElementById('currency-select').addEventListener('change', () => {
+    updateFiatIcon();
+    const sat = parseFloat(document.getElementById('amount-sat').value);
+    const price = selectedPrice();
+    if (price && sat >= 0 && document.getElementById('amount-sat').value !== '') {
+      const decimals = FIAT_DECIMALS[selectedCurrency()] ?? 2;
+      document.getElementById('amount-fiat').value = ((sat / 1e8) * price).toFixed(decimals);
+    } else {
+      document.getElementById('amount-fiat').value = '';
+    }
+  });
+
+  // sat → fiat
   document.getElementById('amount-sat').addEventListener('input', () => {
-    if (updatingFrom === 'usd') return;
+    if (updatingFrom === 'fiat') return;
     updatingFrom = 'sat';
     const sat = parseFloat(document.getElementById('amount-sat').value);
-    if (btcPriceUsd && sat >= 0) {
-      const usd = (sat / 1e8) * btcPriceUsd;
-      document.getElementById('amount-usd').value = usd.toFixed(2);
+    const price = selectedPrice();
+    if (price && sat >= 0) {
+      const decimals = FIAT_DECIMALS[selectedCurrency()] ?? 2;
+      document.getElementById('amount-fiat').value = ((sat / 1e8) * price).toFixed(decimals);
     } else {
-      document.getElementById('amount-usd').value = '';
+      document.getElementById('amount-fiat').value = '';
     }
     updatingFrom = null;
     updatePayBtn();
   });
 
-  // USD → sat
-  document.getElementById('amount-usd').addEventListener('input', () => {
+  // fiat → sat
+  document.getElementById('amount-fiat').addEventListener('input', () => {
     if (updatingFrom === 'sat') return;
-    updatingFrom = 'usd';
-    const usd = parseFloat(document.getElementById('amount-usd').value);
-    if (btcPriceUsd && usd >= 0) {
-      const sat = Math.round((usd / btcPriceUsd) * 1e8);
+    updatingFrom = 'fiat';
+    const fiat = parseFloat(document.getElementById('amount-fiat').value);
+    const price = selectedPrice();
+    if (price && fiat >= 0) {
+      const sat = Math.round((fiat / price) * 1e8);
       document.getElementById('amount-sat').value = sat;
     } else {
       document.getElementById('amount-sat').value = '';
@@ -458,7 +533,7 @@ DEMO_HTML = """<!DOCTYPE html>
     document.getElementById('invoice').style.display = 'none';
     document.getElementById('form').style.display = 'block';
     document.getElementById('amount-sat').value = '';
-    document.getElementById('amount-usd').value = '';
+    document.getElementById('amount-fiat').value = '';
     document.getElementById('submit-btn').disabled = false;
     document.getElementById('submit-btn').textContent = 'Pay';
     document.getElementById('txid-row').textContent = '';
