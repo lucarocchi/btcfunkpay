@@ -36,10 +36,12 @@ class PaymentProcessor:
         self._wallet_name = wallet_name
 
         rpc_base = rpc_url.rstrip("/")
-        if "/wallet/" not in rpc_base:
-            rpc_base = f"{rpc_base}/wallet/{wallet_name}"
+        # Strip wallet path if present so we can reconstruct both URLs
+        if "/wallet/" in rpc_base:
+            rpc_base = rpc_base.split("/wallet/")[0]
 
-        self._rpc = BitcoinRPC(rpc_base)
+        self._rpc_base = BitcoinRPC(rpc_base)              # for wallet management
+        self._rpc = BitcoinRPC(f"{rpc_base}/wallet/{wallet_name}")  # for wallet ops
         self._store = PaymentStore(db_path)
         self._callbacks: list[Callable] = []
         self._monitor = Monitor(
@@ -54,12 +56,12 @@ class PaymentProcessor:
 
     def _setup_wallet(self) -> None:
         try:
-            self._rpc.createwallet(self._wallet_name, disable_private_keys=True, blank=True)
+            self._rpc_base.createwallet(self._wallet_name, disable_private_keys=True, blank=True)
         except RPCError as e:
             if e.code not in (-4, -35):
                 raise
             try:
-                self._rpc.loadwallet(self._wallet_name)
+                self._rpc_base.loadwallet(self._wallet_name)
             except RPCError as le:
                 if le.code != -35:
                     raise
