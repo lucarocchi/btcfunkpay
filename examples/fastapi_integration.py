@@ -46,7 +46,7 @@ DEMO_HTML = """<!DOCTYPE html>
       border-radius: 12px;
       padding: 40px;
       width: 100%;
-      max-width: 480px;
+      max-width: 320px;
     }
 
     h1 {
@@ -237,8 +237,8 @@ DEMO_HTML = """<!DOCTYPE html>
 </head>
 <body>
 <div class="card">
-  <h1>Bitcoin Payment</h1>
-  <p class="subtitle">btcfunkpay demo — on-chain, no custody</p>
+  <h1>BTCFunk Payment</h1>
+  <p class="subtitle">Direct to wallet.</p>
 
   <form id="form">
     <div class="field-wrap">
