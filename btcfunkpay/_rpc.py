@@ -27,11 +27,17 @@ class BitcoinRPC:
             "params": list(params),
         }
         r = self._session.post(self._url, json=payload, timeout=self._timeout)
-        r.raise_for_status()
-        resp = r.json()
+        # Bitcoin Core returns HTTP 500 for RPC errors but always includes JSON.
+        # Parse the JSON first so we can raise RPCError with the actual code/message.
+        try:
+            resp = r.json()
+        except Exception:
+            r.raise_for_status()
+            raise
         if resp.get("error"):
             e = resp["error"]
             raise RPCError(e["code"], e["message"])
+        r.raise_for_status()
         return resp["result"]
 
     def getblockcount(self) -> int:
