@@ -285,7 +285,8 @@ DEMO_HTML = """<!DOCTYPE html>
     const amount_sat = amountRaw ? parseInt(amountRaw) : null;
 
     try {
-      const res = await fetch('/invoices', {
+      const base = location.pathname.replace(/\/?$/, '/');
+      const res = await fetch(base + 'invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount_sat, label }),
@@ -341,7 +342,8 @@ DEMO_HTML = """<!DOCTYPE html>
   async function poll() {
     if (!paymentId) return;
     try {
-      const res = await fetch('/invoices/' + paymentId);
+      const base = location.pathname.replace(/\/?$/, '/');
+      const res = await fetch(base + 'invoices/' + paymentId);
       if (!res.ok) return;
       const data = await res.json();
       updateStatus(data);
