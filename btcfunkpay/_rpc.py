@@ -17,7 +17,10 @@ class BitcoinRPC:
         self._url = url
         self._timeout = timeout
         self._session = requests.Session()
-        self._session.headers.update({"Content-Type": "application/json"})
+        self._session.headers.update({
+            "Content-Type": "application/json",
+            "Connection": "close",
+        })
 
     def call(self, method: str, *params) -> Any:
         payload = {
