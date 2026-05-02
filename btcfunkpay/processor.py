@@ -89,8 +89,11 @@ class PaymentProcessor:
                 },
             ])
         except RPCError as e:
-            log.warning("importdescriptors warning: %s", e)
-            raise
+            if e.code == -4:
+                # Wallet is rescanning from a previous import — descriptors are already loaded.
+                log.info("Wallet rescan already in progress, skipping importdescriptors")
+            else:
+                raise
 
     def setup(self) -> None:
         self._setup_wallet()
