@@ -231,7 +231,7 @@ DEMO_HTML = """<!DOCTYPE html>
     <label for="label">Label (optional)</label>
     <input id="label" type="text" placeholder="e.g. order-42">
 
-    <button type="submit" id="submit-btn">Create Invoice</button>
+    <button type="submit" id="submit-btn">Pay</button>
   </form>
 
   <div id="invoice">
@@ -257,7 +257,7 @@ DEMO_HTML = """<!DOCTYPE html>
     </div>
     <div class="txid" id="txid-row"></div>
 
-    <button class="new-btn" onclick="reset()">New invoice</button>
+    <button class="new-btn" id="cancel-btn" onclick="reset()">&#8592; Back / Cancel</button>
   </div>
 </div>
 
@@ -362,6 +362,12 @@ DEMO_HTML = """<!DOCTYPE html>
     const txidRow = document.getElementById('txid-row');
     if (data.txid) {
       txidRow.textContent = 'txid: ' + data.txid;
+    }
+
+    // hide cancel once payment is done
+    const cancelBtn = document.getElementById('cancel-btn');
+    if (['confirmed', 'overpaid'].includes(data.status)) {
+      cancelBtn.style.display = 'none';
     }
   }
 
