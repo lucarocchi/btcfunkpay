@@ -68,8 +68,19 @@ class BitcoinRPC:
     ) -> dict:
         return self.call("createwallet", name, disable_private_keys, blank)
 
+    def getdescriptorinfo(self, descriptor: str) -> dict:
+        return self.call("getdescriptorinfo", descriptor)
+
     def importdescriptors(self, descriptors: list) -> list:
-        return self.call("importdescriptors", descriptors)
+        # Attach checksum to each descriptor that lacks one (#...)
+        resolved = []
+        for d in descriptors:
+            desc_str = d["desc"]
+            if "#" not in desc_str:
+                info = self.getdescriptorinfo(desc_str)
+                d = {**d, "desc": info["descriptor"]}
+            resolved.append(d)
+        return self.call("importdescriptors", resolved)
 
     def loadwallet(self, name: str) -> dict:
         return self.call("loadwallet", name)

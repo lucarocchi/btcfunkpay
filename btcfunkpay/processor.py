@@ -89,7 +89,8 @@ class PaymentProcessor:
                 },
             ])
         except RPCError as e:
-            log.warning("importdescriptors error (may be non-fatal): %s", e)
+            log.warning("importdescriptors warning: %s", e)
+            raise
 
     def setup(self) -> None:
         self._setup_wallet()
