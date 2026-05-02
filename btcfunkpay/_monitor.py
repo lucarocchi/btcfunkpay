@@ -77,7 +77,7 @@ class Monitor:
                 None, lambda: self._rpc.listsinceblock(last_hash, 0)
             )
         except RPCError as e:
-            if e.code == -5:
+            if e.code in (-5, -8):
                 log.warning("last_block_hash invalid (reorg/pruned?), falling back")
                 height = await asyncio.get_event_loop().run_in_executor(
                     None, self._rpc.getblockcount
