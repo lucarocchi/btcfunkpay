@@ -25,7 +25,7 @@ DEMO_HTML = """<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>btcfunkpay — demo</title>
-  <link href="https://fonts.googleapis.com/css2?family=Boogaloo&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,7 +51,7 @@ DEMO_HTML = """<!DOCTYPE html>
     }
 
     .funky-logo {
-      font-family: 'Boogaloo', cursive;
+      font-family: 'Lobster', cursive;
       font-size: 44px;
       color: #f7931a;
       line-height: 1;
