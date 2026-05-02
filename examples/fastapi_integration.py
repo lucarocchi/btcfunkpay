@@ -92,6 +92,9 @@ DEMO_HTML = """<!DOCTYPE html>
       transition: border-color 0.15s;
     }
     input:focus { border-color: #f7931a; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
 
     .field-sep {
       text-align: center;
