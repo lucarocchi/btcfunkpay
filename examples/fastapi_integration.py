@@ -14,8 +14,10 @@ from pydantic import BaseModel
 
 from btcfunkpay import PaymentProcessor, PaymentEvent, PaymentStatus
 
-XPUB = "zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGDtKsAYz2oz2AGutZYs"
-RPC_URL = "http://btcrpc:password@127.0.0.1:8332"
+import os
+
+XPUB = os.environ["BTCFUNKPAY_XPUB"]
+RPC_URL = os.environ["BTCFUNKPAY_RPC_URL"]
 
 DEMO_HTML = """<!DOCTYPE html>
 <html lang="en">
