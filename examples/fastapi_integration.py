@@ -257,7 +257,7 @@ DEMO_HTML = """<!DOCTYPE html>
     </div>
     <div class="txid" id="txid-row"></div>
 
-    <button class="new-btn" id="cancel-btn" onclick="reset()">&#8592; Back / Cancel</button>
+    <button class="new-btn" id="cancel-btn" onclick="reset()">Cancel</button>
   </div>
 </div>
 
