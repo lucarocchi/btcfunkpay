@@ -50,7 +50,9 @@ class BitcoinRPC:
         return self.call("getbestblockhash")
 
     def listsinceblock(self, blockhash: str = "", minconf: int = 0) -> dict:
-        return self.call("listsinceblock", blockhash, minconf, True, True)
+        if blockhash:
+            return self.call("listsinceblock", blockhash, minconf, True, True)
+        return self.call("listsinceblock")
 
     def gettransaction(self, txid: str) -> dict:
         return self.call("gettransaction", txid, True)
