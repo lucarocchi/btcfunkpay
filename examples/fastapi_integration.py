@@ -62,9 +62,20 @@ DEMO_HTML = """<!DOCTYPE html>
       margin-bottom: 32px;
     }
 
+    .input-group { margin-bottom: 16px; }
+
+    .input-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+
     .field-wrap {
       position: relative;
-      margin-bottom: 12px;
     }
 
     .field-icon {
@@ -96,41 +107,16 @@ DEMO_HTML = """<!DOCTYPE html>
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     input[type=number] { -moz-appearance: textfield; }
 
-    .field-sep {
-      text-align: center;
-      font-size: 16px;
-      color: #ccc;
-      margin: 2px 0 10px;
-      line-height: 1;
-    }
-
-    .currency-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .currency-row label {
-      font-size: 12px;
-      font-weight: 500;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin: 0;
-      white-space: nowrap;
-    }
-
     #currency-select {
+      width: 100%;
       border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 7px 10px;
-      font-size: 13px;
+      padding: 10px 12px;
+      font-size: 14px;
       color: #111;
       background: #fff;
       outline: none;
       cursor: pointer;
-      flex: 1;
     }
     #currency-select:focus { border-color: #f7931a; }
 
@@ -275,26 +261,33 @@ DEMO_HTML = """<!DOCTYPE html>
   <p class="subtitle">Direct to wallet.</p>
 
   <form id="form">
-    <div class="field-wrap">
-      <span class="field-icon btc">₿</span>
-      <input id="amount-sat" type="number" placeholder="satoshis" min="1">
-    </div>
-    <div class="field-sep">⇅</div>
-    <div class="currency-row">
-      <label>Currency</label>
+    <div class="input-group">
+      <label class="input-label" for="currency-select">Currency</label>
       <select id="currency-select">
-        <option value="USD">USD $</option>
-        <option value="EUR">EUR €</option>
-        <option value="GBP">GBP £</option>
-        <option value="JPY">JPY ¥</option>
-        <option value="CAD">CAD C$</option>
-        <option value="CHF">CHF Fr</option>
-        <option value="AUD">AUD A$</option>
+        <option value="USD">USD — US Dollar</option>
+        <option value="EUR">EUR — Euro</option>
+        <option value="GBP">GBP — British Pound</option>
+        <option value="JPY">JPY — Japanese Yen</option>
+        <option value="CAD">CAD — Canadian Dollar</option>
+        <option value="CHF">CHF — Swiss Franc</option>
+        <option value="AUD">AUD — Australian Dollar</option>
       </select>
     </div>
-    <div class="field-wrap">
-      <span class="field-icon usd" id="fiat-icon">$</span>
-      <input id="amount-fiat" type="number" placeholder="amount" min="0" step="0.01">
+
+    <div class="input-group">
+      <label class="input-label" for="amount-fiat">Amount</label>
+      <div class="field-wrap">
+        <span class="field-icon usd" id="fiat-icon">$</span>
+        <input id="amount-fiat" type="number" placeholder="0.00" min="0" step="0.01">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label" for="amount-btc">Bitcoin</label>
+      <div class="field-wrap">
+        <span class="field-icon btc">₿</span>
+        <input id="amount-btc" type="number" placeholder="0.00000000" min="0" step="0.00000001">
+      </div>
     </div>
 
     <button type="submit" id="submit-btn" disabled>Pay</button>
@@ -352,12 +345,14 @@ DEMO_HTML = """<!DOCTYPE html>
   function updateFiatIcon() {
     const sym = CURRENCY_SYMBOLS[selectedCurrency()] || selectedCurrency();
     document.getElementById('fiat-icon').textContent = sym;
-    document.getElementById('amount-fiat').placeholder = selectedCurrency();
+  }
+
+  function satFromBtcField() {
+    return Math.round((parseFloat(document.getElementById('amount-btc').value) || 0) * 1e8);
   }
 
   function updatePayBtn() {
-    const sat = parseInt(document.getElementById('amount-sat').value) || 0;
-    document.getElementById('submit-btn').disabled = sat < MIN_SAT;
+    document.getElementById('submit-btn').disabled = satFromBtcField() < MIN_SAT;
   }
 
   const STATUS_LABELS = {
@@ -377,46 +372,45 @@ DEMO_HTML = """<!DOCTYPE html>
   }
   fetchPrice();
 
-  // currency change: re-convert from sat side
+  // currency change: re-convert from BTC side
   document.getElementById('currency-select').addEventListener('change', () => {
     updateFiatIcon();
-    const sat = parseFloat(document.getElementById('amount-sat').value);
+    const btc = parseFloat(document.getElementById('amount-btc').value);
     const price = selectedPrice();
-    if (price && sat >= 0 && document.getElementById('amount-sat').value !== '') {
+    if (price && !isNaN(btc) && document.getElementById('amount-btc').value !== '') {
       const decimals = FIAT_DECIMALS[selectedCurrency()] ?? 2;
-      document.getElementById('amount-fiat').value = ((sat / 1e8) * price).toFixed(decimals);
+      document.getElementById('amount-fiat').value = (btc * price).toFixed(decimals);
     } else {
       document.getElementById('amount-fiat').value = '';
     }
   });
 
-  // sat → fiat
-  document.getElementById('amount-sat').addEventListener('input', () => {
-    if (updatingFrom === 'fiat') return;
-    updatingFrom = 'sat';
-    const sat = parseFloat(document.getElementById('amount-sat').value);
+  // fiat → BTC
+  document.getElementById('amount-fiat').addEventListener('input', () => {
+    if (updatingFrom === 'btc') return;
+    updatingFrom = 'fiat';
+    const fiat = parseFloat(document.getElementById('amount-fiat').value);
     const price = selectedPrice();
-    if (price && sat >= 0) {
-      const decimals = FIAT_DECIMALS[selectedCurrency()] ?? 2;
-      document.getElementById('amount-fiat').value = ((sat / 1e8) * price).toFixed(decimals);
+    if (price && fiat >= 0) {
+      document.getElementById('amount-btc').value = (fiat / price).toFixed(8);
     } else {
-      document.getElementById('amount-fiat').value = '';
+      document.getElementById('amount-btc').value = '';
     }
     updatingFrom = null;
     updatePayBtn();
   });
 
-  // fiat → sat
-  document.getElementById('amount-fiat').addEventListener('input', () => {
-    if (updatingFrom === 'sat') return;
-    updatingFrom = 'fiat';
-    const fiat = parseFloat(document.getElementById('amount-fiat').value);
+  // BTC → fiat
+  document.getElementById('amount-btc').addEventListener('input', () => {
+    if (updatingFrom === 'fiat') return;
+    updatingFrom = 'btc';
+    const btc = parseFloat(document.getElementById('amount-btc').value);
     const price = selectedPrice();
-    if (price && fiat >= 0) {
-      const sat = Math.round((fiat / price) * 1e8);
-      document.getElementById('amount-sat').value = sat;
+    if (price && btc >= 0) {
+      const decimals = FIAT_DECIMALS[selectedCurrency()] ?? 2;
+      document.getElementById('amount-fiat').value = (btc * price).toFixed(decimals);
     } else {
-      document.getElementById('amount-sat').value = '';
+      document.getElementById('amount-fiat').value = '';
     }
     updatingFrom = null;
     updatePayBtn();
@@ -428,8 +422,7 @@ DEMO_HTML = """<!DOCTYPE html>
     btn.disabled = true;
     btn.textContent = 'Creating...';
 
-    const satRaw = document.getElementById('amount-sat').value;
-    const amount_sat = satRaw ? parseInt(satRaw) : null;
+    const amount_sat = satFromBtcField() || null;
 
     try {
       const base = location.pathname.replace(/\/?$/, '/');
@@ -532,7 +525,7 @@ DEMO_HTML = """<!DOCTYPE html>
     currentAddress = '';
     document.getElementById('invoice').style.display = 'none';
     document.getElementById('form').style.display = 'block';
-    document.getElementById('amount-sat').value = '';
+    document.getElementById('amount-btc').value = '';
     document.getElementById('amount-fiat').value = '';
     document.getElementById('submit-btn').disabled = false;
     document.getElementById('submit-btn').textContent = 'Pay';
