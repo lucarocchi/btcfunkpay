@@ -62,28 +62,44 @@ DEMO_HTML = """<!DOCTYPE html>
       margin-bottom: 32px;
     }
 
-    label {
-      display: block;
-      font-size: 12px;
-      font-weight: 500;
-      color: #555;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .field-wrap {
+      position: relative;
+      margin-bottom: 12px;
     }
+
+    .field-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      font-weight: 700;
+      pointer-events: none;
+      line-height: 1;
+    }
+
+    .field-icon.btc { color: #f7931a; }
+    .field-icon.usd { color: #22a55a; }
 
     input {
       width: 100%;
       border: 1px solid #ddd;
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 10px 12px 10px 32px;
       font-size: 14px;
       color: #111;
-      margin-bottom: 16px;
       outline: none;
       transition: border-color 0.15s;
     }
     input:focus { border-color: #f7931a; }
+
+    .field-sep {
+      text-align: center;
+      font-size: 16px;
+      color: #ccc;
+      margin: 2px 0 10px;
+      line-height: 1;
+    }
 
     button {
       width: 100%;
@@ -225,11 +241,15 @@ DEMO_HTML = """<!DOCTYPE html>
   <p class="subtitle">btcfunkpay demo — on-chain, no custody</p>
 
   <form id="form">
-    <label for="amount">Amount (satoshis)</label>
-    <input id="amount" type="number" placeholder="e.g. 50000" min="1">
-
-    <label for="label">Label (optional)</label>
-    <input id="label" type="text" placeholder="e.g. order-42">
+    <div class="field-wrap">
+      <span class="field-icon btc">₿</span>
+      <input id="amount-sat" type="number" placeholder="satoshis" min="1">
+    </div>
+    <div class="field-sep">⇅</div>
+    <div class="field-wrap">
+      <span class="field-icon usd">$</span>
+      <input id="amount-usd" type="number" placeholder="USD" min="0" step="0.01">
+    </div>
 
     <button type="submit" id="submit-btn">Pay</button>
   </form>
@@ -265,6 +285,8 @@ DEMO_HTML = """<!DOCTYPE html>
   let paymentId = null;
   let pollTimer = null;
   let currentAddress = '';
+  let btcPriceUsd = null;
+  let updatingFrom = null;
 
   const STATUS_LABELS = {
     pending:   'Waiting for payment...',
@@ -274,22 +296,59 @@ DEMO_HTML = """<!DOCTYPE html>
     overpaid:  'Payment confirmed (overpaid)',
   };
 
+  // fetch BTC price once on load
+  async function fetchPrice() {
+    try {
+      const r = await fetch('https://mempool.space/api/v1/prices');
+      const d = await r.json();
+      btcPriceUsd = d.USD;
+    } catch (_) {}
+  }
+  fetchPrice();
+
+  // sat → USD
+  document.getElementById('amount-sat').addEventListener('input', () => {
+    if (updatingFrom === 'usd') return;
+    updatingFrom = 'sat';
+    const sat = parseFloat(document.getElementById('amount-sat').value);
+    if (btcPriceUsd && sat >= 0) {
+      const usd = (sat / 1e8) * btcPriceUsd;
+      document.getElementById('amount-usd').value = usd.toFixed(2);
+    } else {
+      document.getElementById('amount-usd').value = '';
+    }
+    updatingFrom = null;
+  });
+
+  // USD → sat
+  document.getElementById('amount-usd').addEventListener('input', () => {
+    if (updatingFrom === 'sat') return;
+    updatingFrom = 'usd';
+    const usd = parseFloat(document.getElementById('amount-usd').value);
+    if (btcPriceUsd && usd >= 0) {
+      const sat = Math.round((usd / btcPriceUsd) * 1e8);
+      document.getElementById('amount-sat').value = sat;
+    } else {
+      document.getElementById('amount-sat').value = '';
+    }
+    updatingFrom = null;
+  });
+
   document.getElementById('form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
     btn.textContent = 'Creating...';
 
-    const amountRaw = document.getElementById('amount').value;
-    const label = document.getElementById('label').value.trim() || null;
-    const amount_sat = amountRaw ? parseInt(amountRaw) : null;
+    const satRaw = document.getElementById('amount-sat').value;
+    const amount_sat = satRaw ? parseInt(satRaw) : null;
 
     try {
       const base = location.pathname.replace(/\/?$/, '/');
       const res = await fetch(base + 'invoices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount_sat, label }),
+        body: JSON.stringify({ amount_sat }),
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
@@ -297,7 +356,7 @@ DEMO_HTML = """<!DOCTYPE html>
     } catch (err) {
       alert('Error: ' + err.message);
       btn.disabled = false;
-      btn.textContent = 'Create Invoice';
+      btn.textContent = 'Pay';
     }
   });
 
@@ -385,10 +444,12 @@ DEMO_HTML = """<!DOCTYPE html>
     currentAddress = '';
     document.getElementById('invoice').style.display = 'none';
     document.getElementById('form').style.display = 'block';
-    document.getElementById('form').reset();
+    document.getElementById('amount-sat').value = '';
+    document.getElementById('amount-usd').value = '';
     document.getElementById('submit-btn').disabled = false;
-    document.getElementById('submit-btn').textContent = 'Create Invoice';
+    document.getElementById('submit-btn').textContent = 'Pay';
     document.getElementById('txid-row').textContent = '';
+    document.getElementById('cancel-btn').style.display = '';
   }
 </script>
 </body>
