@@ -51,7 +51,7 @@ class BitcoinRPC:
 
     def listsinceblock(self, blockhash: str = "", minconf: int = 0) -> dict:
         if blockhash:
-            return self.call("listsinceblock", blockhash, minconf, True, True)
+            return self.call("listsinceblock", blockhash)
         return self.call("listsinceblock")
 
     def gettransaction(self, txid: str) -> dict:
