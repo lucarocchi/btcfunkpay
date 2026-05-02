@@ -118,6 +118,7 @@ DEMO_HTML = """<!DOCTYPE html>
     }
     button:hover { background: #e8840f; }
     button:disabled { background: #ccc; cursor: default; }
+    #submit-btn { transition: background 0.15s, opacity 0.15s; }
 
     /* ---- invoice panel ---- */
     #invoice { display: none; margin-top: 32px; }
@@ -254,7 +255,7 @@ DEMO_HTML = """<!DOCTYPE html>
       <input id="amount-usd" type="number" placeholder="USD" min="0" step="0.01">
     </div>
 
-    <button type="submit" id="submit-btn">Pay</button>
+    <button type="submit" id="submit-btn" disabled>Pay</button>
   </form>
 
   <div id="invoice">
@@ -285,11 +286,18 @@ DEMO_HTML = """<!DOCTYPE html>
 </div>
 
 <script>
+  const MIN_SAT = 1000;  // configurable minimum
+
   let paymentId = null;
   let pollTimer = null;
   let currentAddress = '';
   let btcPriceUsd = null;
   let updatingFrom = null;
+
+  function updatePayBtn() {
+    const sat = parseInt(document.getElementById('amount-sat').value) || 0;
+    document.getElementById('submit-btn').disabled = sat < MIN_SAT;
+  }
 
   const STATUS_LABELS = {
     pending:   'Waiting for payment...',
@@ -321,6 +329,7 @@ DEMO_HTML = """<!DOCTYPE html>
       document.getElementById('amount-usd').value = '';
     }
     updatingFrom = null;
+    updatePayBtn();
   });
 
   // USD → sat
@@ -335,6 +344,7 @@ DEMO_HTML = """<!DOCTYPE html>
       document.getElementById('amount-sat').value = '';
     }
     updatingFrom = null;
+    updatePayBtn();
   });
 
   document.getElementById('form').addEventListener('submit', async (e) => {
