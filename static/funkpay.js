@@ -62,7 +62,7 @@
     container.innerHTML = '';
     _iframe = document.createElement('iframe');
     _iframe.setAttribute('allow', 'clipboard-write');
-    _iframe.style.cssText = 'border:none;width:100%;height:480px;border-radius:12px;display:block;';
+    _iframe.style.cssText = 'border:none;width:100%;height:520px;border-radius:12px;display:block;';
     _iframe.src = _buildSrc(opts);
     container.appendChild(_iframe);
     window.addEventListener('message', _onMessage);
