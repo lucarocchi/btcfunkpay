@@ -30,7 +30,7 @@ It also ships an **embeddable JS widget** — drop one `<script>` tag on any pag
 
 **Live demo → [btcfunk.com/#support](https://btcfunk.com/#support)**
 
-> **Note:** the widget includes an "I've paid" button that the user can click at any time, even without sending any satoshis. It only shows a thank-you screen on the user's side — if no transaction arrives on-chain, no success callback or webhook call will ever be triggered.
+> **Note:** the widget includes an "I've paid" button that the user can click at any time, even without sending any amount. It only shows a thank-you screen on the user's side — if no transaction arrives on-chain, no success callback or webhook call will ever be triggered.
 
 ---
 
