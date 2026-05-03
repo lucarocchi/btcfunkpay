@@ -30,6 +30,8 @@ It also ships an **embeddable JS widget** — drop one `<script>` tag on any pag
 
 **Live demo → [btcfunk.com/#support](https://btcfunk.com/#support)**
 
+> **Note:** the widget includes an "I've paid" button that the user can click at any time — even without having made a transaction. It only shows a thank-you screen client-side; it does **not** confirm payment. Always rely on the server-side webhook or invoice polling to verify actual on-chain payment before delivering goods or services.
+
 ---
 
 ## Features
