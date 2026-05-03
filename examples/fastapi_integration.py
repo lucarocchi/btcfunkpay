@@ -342,7 +342,7 @@ DEMO_HTML = """<!DOCTYPE html>
       <label class="input-label" for="amount-fiat">Amount</label>
       <div class="field-wrap">
         <span class="field-icon usd" id="fiat-icon">$</span>
-        <input id="amount-fiat" type="number" placeholder="0.00" min="0" step="0.01">
+        <input id="amount-fiat" type="number" placeholder="0.00" min="0">
       </div>
     </div>
 
