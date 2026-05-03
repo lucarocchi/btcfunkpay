@@ -408,10 +408,6 @@ DEMO_HTML = """<!DOCTYPE html>
     <div class="ok-txid" id="ok-txid" title="Click to copy txid"></div>
   </div>
 
-  <p class="oss-footer">
-    <a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener">Open source</a>
-    &nbsp;·&nbsp; MIT License
-  </p>
 </div>
 
 <script>
