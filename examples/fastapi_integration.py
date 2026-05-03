@@ -265,12 +265,12 @@ DEMO_HTML = """<!DOCTYPE html>
     .new-btn:hover { border-color: #f7931a; color: #f7931a; background: none; }
 
     .oss-footer {
-      margin-top: 16px;
+      margin-top: 20px;
       text-align: center;
       font-size: 11px;
-      color: #bbb;
+      color: #999;
     }
-    .oss-footer a { color: #bbb; text-decoration: none; }
+    .oss-footer a { color: #999; text-decoration: none; }
     .oss-footer a:hover { color: #f7931a; }
   </style>
 </head>
@@ -337,11 +337,12 @@ DEMO_HTML = """<!DOCTYPE html>
 
     <button class="new-btn" id="cancel-btn" onclick="reset()">Cancel</button>
   </div>
+
+  <p class="oss-footer">
+    <a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener">Open source</a>
+    &nbsp;·&nbsp; MIT License
+  </p>
 </div>
-<p class="oss-footer">
-  <a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener">Open source</a>
-  &nbsp;·&nbsp; MIT License
-</p>
 
 <script>
   const MIN_SAT = __MIN_SAT__;
