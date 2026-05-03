@@ -18,7 +18,7 @@
 
 FunkPay is a Python library for accepting Bitcoin on-chain payments. It derives receive addresses from your **xpub** (no private keys), monitors transactions via your own **Bitcoin Core node**, and fires callbacks when payments arrive.
 
-It also ships an **embeddable JS widget** — drop one `<script>` tag on any page and a payment modal appears, like Stripe but Bitcoin.
+It also ships an **embeddable JS widget** — drop one `<script>` tag on any page and a payment widget appears inline, like Stripe but Bitcoin.
 
 ```html
 <div id="funkpay" data-currency="EUR" data-amount="50000" data-label="user-42"></div>
@@ -114,7 +114,7 @@ proc.run_forever()
 
 ```bash
 uvicorn examples.fastapi_integration:app --port 8001
-# open http://localhost:8001
+# then embed the widget on your page pointing to http://localhost:8001
 ```
 
 ---

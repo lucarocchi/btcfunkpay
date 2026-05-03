@@ -11,9 +11,9 @@ FunkPay is a Bitcoin on-chain payment library. It:
 - Derives receive addresses from an **xpub** (BIP84, no private keys)
 - Monitors transactions via a **Bitcoin Core node** (your own, no third party)
 - Fires callbacks when payment status changes (detected → confirmed)
-- Exposes a **payment page** and an **embeddable JS widget** (`funkpay.js`)
+- Exposes an **embeddable JS widget** (`funkpay.js`)
 
-The demo is live at: **https://btcfunk.com/pay/**
+The demo is live at: **https://btcfunk.com/#support**
 
 ---
 
