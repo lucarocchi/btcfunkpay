@@ -410,7 +410,7 @@
           <div class="ok-amount" id="ok-amount"></div>
           <div class="ok-txid" id="ok-txid" title="Click to copy txid"></div>
         </div>
-        <button id="thankyou-btn" style="background:#22c55e;margin-top:auto;">Thank you</button>
+        <button id="thankyou-btn" style="background:#22c55e;margin-top:auto;">Done</button>
       </div>
     </div>
   `;
