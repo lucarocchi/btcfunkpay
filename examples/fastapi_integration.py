@@ -90,10 +90,20 @@ DEMO_HTML = """<!DOCTYPE html>
 
     .funky-logo {
       display: block;
-      width: 180px;
+      width: 120px;
       height: auto;
-      margin: 0 auto 12px;
+      margin: 0 auto 6px;
     }
+
+    #payment-success {
+      display: none;
+      text-align: center;
+      padding: 16px 0 8px;
+    }
+    #payment-success .check { font-size: 48px; line-height: 1; margin-bottom: 8px; }
+    #payment-success .ok-title { font-size: 1.1rem; font-weight: 700; color: #22c55e; margin-bottom: 4px; }
+    #payment-success .ok-amount { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 8px; }
+    #payment-success .ok-txid { font-size: 10px; font-family: monospace; color: var(--text-muted); word-break: break-all; cursor: pointer; }
 
     h1 {
       font-size: 18px;
@@ -378,6 +388,13 @@ DEMO_HTML = """<!DOCTYPE html>
     <button class="new-btn" id="cancel-btn" onclick="reset()">Cancel</button>
   </div>
 
+  <div id="payment-success">
+    <div class="check">✓</div>
+    <div class="ok-title">Payment received!</div>
+    <div class="ok-amount" id="ok-amount"></div>
+    <div class="ok-txid" id="ok-txid" title="Click to copy txid"></div>
+  </div>
+
   <p class="oss-footer">
     <a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener">Open source</a>
     &nbsp;·&nbsp; MIT License
@@ -606,15 +623,30 @@ DEMO_HTML = """<!DOCTYPE html>
       txidRow.innerHTML = 'txid: <span style="cursor:pointer;text-decoration:underline;text-underline-offset:2px" title="Copy txid" onclick="navigator.clipboard.writeText(\'' + data.txid + '\').then(function(){var el=document.getElementById(\'txid-row\');var prev=el.style.color;el.style.color=\'#22c55e\';setTimeout(function(){el.style.color=prev;},800);})">' + data.txid + '</span>';
     }
 
-    // hide cancel once payment is done
-    const cancelBtn = document.getElementById('cancel-btn');
-    if (['confirmed', 'overpaid'].includes(data.status)) {
-      cancelBtn.style.display = 'none';
+    // show success screen on detected or confirmed
+    if (['detected', 'confirmed', 'overpaid'].includes(data.status)) {
+      clearInterval(pollTimer);
+      document.getElementById('invoice').style.display = 'none';
+      document.getElementById('form').style.display = 'none';
+      const s = document.getElementById('payment-success');
+      s.style.display = 'block';
+      const sat = data.received_sat || 0;
+      document.getElementById('ok-amount').textContent = (sat / 1e8).toFixed(8) + ' BTC received';
+      if (data.txid) {
+        const el = document.getElementById('ok-txid');
+        el.textContent = 'txid: ' + data.txid;
+        el.onclick = function() {
+          navigator.clipboard.writeText(data.txid).then(function() {
+            el.style.color = '#22c55e'; setTimeout(function(){ el.style.color = ''; }, 800);
+          });
+        };
+      }
+      setTimeout(notifyHeight, 50);
     }
 
-    // notify parent if embedded in modal
+    // notify parent via postMessage
     if (window.parent !== window) {
-      if (['confirmed', 'overpaid'].includes(data.status)) {
+      if (['detected', 'confirmed', 'overpaid'].includes(data.status)) {
         window.parent.postMessage({ type: 'funkpay:confirmed', payment: data }, '*');
       }
       if (data.status === 'expired') {
