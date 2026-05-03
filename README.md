@@ -33,7 +33,7 @@ This isn't a workaround — it's the same logic behind every contactless payment
 
 ---
 
-## What is FunkPay
+## Overview
 
 FunkPay is a Python library for accepting Bitcoin on-chain payments. It derives receive addresses from your **xpub** (no private keys), monitors transactions via your own **Bitcoin Core node**, and fires callbacks when payments arrive.
 
