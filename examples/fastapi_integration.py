@@ -454,15 +454,18 @@ DEMO_HTML = """<!DOCTYPE html>
     try {
       const r = await fetch('https://mempool.space/api/v1/prices');
       allPrices = await r.json();
-      const btc = parseFloat(document.getElementById('amount-btc').value);
-      if (btc > 0) {
-        const price = selectedPrice();
-        if (price) {
-          const decimals = FIAT_DECIMALS[selectedCurrency()] ?? 2;
+      const price = selectedPrice();
+      if (price) {
+        const btc = parseFloat(document.getElementById('amount-btc').value);
+        const fiat = parseFloat(document.getElementById('amount-fiat').value);
+        const decimals = FIAT_DECIMALS[selectedCurrency()] ?? 2;
+        if (btc > 0) {
           document.getElementById('amount-fiat').value = (btc * price).toFixed(decimals);
+        } else if (fiat > 0) {
+          document.getElementById('amount-btc').value = (fiat / price).toFixed(8);
         }
-        updatePayBtn();
       }
+      updatePayBtn();
     } catch (_) {}
   }
   fetchPrice();
