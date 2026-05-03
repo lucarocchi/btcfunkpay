@@ -41,3 +41,8 @@ port = 8001
 # URL to POST payment events to (leave blank to disable)
 # Payload: { payment_id, label, status, received_sat, txid, address, confirmations }
 webhook_url =
+
+[cors]
+# Comma-separated list of allowed origins, or * for all
+# Example: https://mysite.com,https://shop.mysite.com
+allowed_origins = *

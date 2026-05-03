@@ -27,6 +27,9 @@ _DEFAULTS = {
     "notifications": {
         "webhook_url": "",
     },
+    "cors": {
+        "allowed_origins": "*",
+    },
 }
 
 _ENV_MAP = {
@@ -43,6 +46,7 @@ _ENV_MAP = {
     "BTCFUNKPAY_HOST":                    ("server",   "host"),
     "BTCFUNKPAY_PORT":                    ("server",   "port"),
     "BTCFUNKPAY_WEBHOOK_URL":             ("notifications", "webhook_url"),
+    "BTCFUNKPAY_ALLOWED_ORIGINS":         ("cors",          "allowed_origins"),
 }
 
 
@@ -118,6 +122,11 @@ class Config:
     @property
     def webhook_url(self) -> str:
         return self._cp.get("notifications", "webhook_url", fallback="")
+
+    # cors
+    @property
+    def allowed_origins(self) -> str:
+        return self._cp.get("cors", "allowed_origins", fallback="*")
 
     def validate(self) -> None:
         if not self.xpub:

@@ -21,15 +21,15 @@ The demo is live at: **https://btcfunk.com/pay/**
 
 ```
 Your website
-  └── <div id="funkpay">        ← you place this div anywhere
-  └── <script funkpay.js>       ← auto-mounts into the div above
-        └── iframe → https://btcfunk.com/pay/
-              ├── POST /invoices        (create invoice)
-              ├── GET  /invoices/:id    (poll status)
-              └── postMessage → parent  (confirmed / expired)
+  └── <div id="funkpay">        ← place this div anywhere
+  └── <script src="https://btcfunk.com/pay/funkpay.js"></script>
+        └── Shadow DOM injected into #funkpay
+              ├── POST /pay/invoices        (create invoice)
+              ├── GET  /pay/invoices/:id    (poll status)
+              └── FunkPay.on() callbacks → parent page
 ```
 
-The payment UI runs inside an **iframe** for CSS/JS isolation — the same approach used by Stripe. Your page styles never leak in, and the widget works on any website.
+The payment UI runs inside a **Shadow DOM** for CSS isolation — your page styles never leak in, and the widget works on any website. No iframe, no cross-origin restrictions.
 
 Want a modal/popup? Style the div yourself with `position:fixed` — FunkPay doesn't care where the div is.
 
@@ -77,7 +77,7 @@ That's it. The script finds `#funkpay` automatically and renders the payment wid
 </script>
 ```
 
-Callbacks registered before or after the script loads both work.
+Callbacks registered before or after the script loads both work — no postMessage needed, the widget calls them directly.
 
 ### Modal / popup
 
@@ -244,6 +244,21 @@ Environment variables override the config file (useful for Docker):
 
 ```bash
 uvicorn examples.fastapi_integration:app --host 127.0.0.1 --port 8001
+```
+
+### CORS
+
+The server enables CORS by default (`allowed_origins = *`). To restrict to specific domains, set in `btcfunkpay.conf`:
+
+```ini
+[cors]
+allowed_origins = https://mysite.com,https://shop.mysite.com
+```
+
+Or via environment variable:
+
+```bash
+export BTCFUNKPAY_ALLOWED_ORIGINS=https://mysite.com
 ```
 
 ### Nginx proxy (serve at /pay/)

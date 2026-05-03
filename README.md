@@ -37,7 +37,7 @@ It also ships an **embeddable JS widget** — drop one `<script>` tag on any pag
 - **Self-custodial** — funds go directly to your wallet, FunkPay never touches private keys
 - **No third party** — your node, your database, your data
 - **BIP84 address derivation** — pure Python stdlib, no external crypto libraries
-- **Embeddable widget** — one `<script>` tag, works on any website
+- **Embeddable widget** — one `<script>` tag, Shadow DOM isolation, works on any website
 - **Multi-currency** — fiat display in USD, EUR, GBP, JPY, CAD, CHF, AUD
 - **Reorg-safe** — handles chain reorganizations automatically
 - **Async + sync** — works standalone or inside FastAPI / asyncio apps
