@@ -73,7 +73,7 @@ DEMO_HTML = """<!DOCTYPE html>
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
+      background: transparent;
       color: var(--text);
       min-height: 100vh;
       display: flex;
