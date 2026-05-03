@@ -21,65 +21,110 @@ The demo is live at: **https://btcfunk.com/pay/**
 
 ```
 Your website
-  └── <script src="https://btcfunk.com/pay/funkpay.js">
-        └── FunkPay.open() → modal iframe
-              └── https://btcfunk.com/pay/   (payment page)
-                    ├── POST /invoices        (create invoice)
-                    ├── GET  /invoices/:id    (poll status)
-                    └── postMessage → parent  (confirmed / expired)
+  └── <div id="funkpay">        ← you place this div anywhere
+  └── <script funkpay.js>       ← auto-mounts into the div above
+        └── iframe → https://btcfunk.com/pay/
+              ├── POST /invoices        (create invoice)
+              ├── GET  /invoices/:id    (poll status)
+              └── postMessage → parent  (confirmed / expired)
 ```
+
+The payment UI runs inside an **iframe** for CSS/JS isolation — the same approach used by Stripe. Your page styles never leak in, and the widget works on any website.
+
+Want a modal/popup? Style the div yourself with `position:fixed` — FunkPay doesn't care where the div is.
 
 ---
 
 ## Embedding funkpay.js
 
-### Minimal
+### Minimal — two lines
 
 ```html
+<div id="funkpay"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
-<button onclick="FunkPay.open()">Pay with Bitcoin</button>
 ```
 
-### With amount and callback
+That's it. The script finds `#funkpay` automatically and renders the payment widget inside it.
+
+### With options (data attributes)
 
 ```html
+<div id="funkpay"
+     data-currency="EUR"
+     data-amount="50000"
+     data-label="user-42"
+     data-theme="auto">
+</div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
+```
 
+### With payment callbacks
+
+```html
+<div id="funkpay" data-currency="EUR"></div>
+<script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
-  // Register callback BEFORE open()
   FunkPay.on('confirmed', function(payment) {
-    console.log('Payment confirmed!', payment);
-    // payment.payment_id  — invoice ID
-    // payment.received_sat — amount received in satoshis
-    // payment.status      — 'confirmed' or 'overpaid'
+    // payment.payment_id   — invoice ID
+    // payment.received_sat — satoshis received
+    // payment.status       — 'confirmed' or 'overpaid'
+    activateSubscription(payment.label);
   });
 
   FunkPay.on('expired', function(payment) {
-    console.log('Invoice expired', payment.payment_id);
+    console.log('expired', payment.payment_id);
   });
 </script>
+```
 
-<!-- Open with pre-filled amount and a label to identify the user/order -->
-<button onclick="FunkPay.open({ amount_sat: 50000, label: 'user-42', currency: 'EUR' })">
-  Pay €xx in Bitcoin
-</button>
+Callbacks registered before or after the script loads both work.
+
+### Modal / popup
+
+FunkPay doesn't build the overlay — you do. Position the div however you want:
+
+```html
+<style>
+  #funkpay-wrap {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  #funkpay-wrap.open { display: flex; }
+  #funkpay { width: 380px; }
+</style>
+
+<div id="funkpay-wrap">
+  <div id="funkpay" data-currency="EUR"></div>
+</div>
+<script src="https://btcfunk.com/pay/funkpay.js"></script>
+<script>
+  document.getElementById('pay-btn').addEventListener('click', function() {
+    document.getElementById('funkpay-wrap').classList.add('open');
+  });
+  FunkPay.on('confirmed', function(p) {
+    document.getElementById('funkpay-wrap').classList.remove('open');
+    activateSubscription(p.label);
+  });
+</script>
 ```
 
 ### FunkPay API
 
-| Method | Description |
-|--------|-------------|
-| `FunkPay.open(opts)` | Open the payment modal |
-| `FunkPay.close()` | Close the modal programmatically |
+| | |
+|---|---|
 | `FunkPay.on(event, cb)` | Register event callback |
 
-**`open(opts)` options:**
+**`data-*` attributes on `#funkpay`:**
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `amount_sat` | number | Amount in satoshis (pre-fills BTC field) |
-| `label` | string | Order or user identifier stored with the invoice |
-| `currency` | string | Default fiat currency: `USD`, `EUR`, `GBP`, `JPY`, `CAD`, `CHF`, `AUD` |
+| Attribute | Default | Description |
+|-----------|---------|-------------|
+| `data-currency` | `USD` | Fiat display currency: `USD` `EUR` `GBP` `JPY` `CAD` `CHF` `AUD` |
+| `data-amount` | — | Pre-fill amount in satoshis |
+| `data-label` | — | Order or user identifier stored with the invoice |
+| `data-theme` | `auto` | Color theme: `light`, `dark`, or `auto` (follows system `prefers-color-scheme`) |
 
 **Events:**
 

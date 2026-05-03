@@ -21,10 +21,10 @@ FunkPay is a Python library for accepting Bitcoin on-chain payments. It derives 
 It also ships an **embeddable JS widget** — drop one `<script>` tag on any page and a payment modal appears, like Stripe but Bitcoin.
 
 ```html
+<div id="funkpay" data-currency="EUR" data-amount="50000" data-label="user-42"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
   FunkPay.on('confirmed', (payment) => activateSubscription(payment.label));
-  FunkPay.open({ amount_sat: 50000, label: 'user-42', currency: 'EUR' });
 </script>
 ```
 
@@ -120,13 +120,13 @@ uvicorn examples.fastapi_integration:app --port 8001
 ## Embed on your website
 
 ```html
-<!-- 1. Load the widget -->
+<!-- 1. Place the div -->
+<div id="funkpay" data-currency="EUR"></div>
+
+<!-- 2. Load the widget — auto-mounts into the div above -->
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 
-<!-- 2. Open on button click -->
-<button onclick="FunkPay.open()">Pay with Bitcoin</button>
-
-<!-- 3. Handle events -->
+<!-- 3. Handle events (optional) -->
 <script>
   FunkPay.on('confirmed', function(payment) {
     // payment.payment_id, payment.received_sat, payment.status
@@ -135,13 +135,14 @@ uvicorn examples.fastapi_integration:app --port 8001
 </script>
 ```
 
-`FunkPay.open(opts)` options:
+`data-*` attributes on `#funkpay`:
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `amount_sat` | number | Pre-fill amount in satoshis |
-| `label` | string | Order / user identifier |
-| `currency` | string | Fiat currency: `USD` `EUR` `GBP` `JPY` `CAD` `CHF` `AUD` |
+| Attribute | Description |
+|-----------|-------------|
+| `data-currency` | Fiat currency: `USD` `EUR` `GBP` `JPY` `CAD` `CHF` `AUD` |
+| `data-amount` | Pre-fill amount in satoshis |
+| `data-label` | Order / user identifier |
+| `data-theme` | `light` \| `dark` \| `auto` (default: auto-detect) |
 
 ---
 
