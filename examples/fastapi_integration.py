@@ -452,7 +452,7 @@ DEMO_HTML = """<!DOCTYPE html>
   // fetch all BTC prices once on load, then fill fiat if amount param was set
   async function fetchPrice() {
     try {
-      const r = await fetch('https://mempool.space/api/v1/prices');
+      const r = await fetch(location.origin + '/api/prices');
       allPrices = await r.json();
       const price = selectedPrice();
       if (price) {
