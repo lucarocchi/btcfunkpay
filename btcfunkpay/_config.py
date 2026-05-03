@@ -17,6 +17,7 @@ _DEFAULTS = {
         "required_confirmations": "1",
         "poll_interval": "30",
         "expiry_seconds": "3600",
+        "min_sat": "1000",
     },
     "server": {
         "db_path": "btcfunkpay.sqlite",
@@ -34,6 +35,7 @@ _ENV_MAP = {
     "BTCFUNKPAY_REQUIRED_CONFIRMATIONS":  ("payments", "required_confirmations"),
     "BTCFUNKPAY_POLL_INTERVAL":           ("payments", "poll_interval"),
     "BTCFUNKPAY_EXPIRY_SECONDS":          ("payments", "expiry_seconds"),
+    "BTCFUNKPAY_MIN_SAT":                 ("payments", "min_sat"),
     "BTCFUNKPAY_DB_PATH":                 ("server",   "db_path"),
     "BTCFUNKPAY_HOST":                    ("server",   "host"),
     "BTCFUNKPAY_PORT":                    ("server",   "port"),
@@ -90,6 +92,10 @@ class Config:
     def expiry_seconds(self) -> Optional[int]:
         v = self._cp["payments"].getint("expiry_seconds")
         return v if v > 0 else None
+
+    @property
+    def min_sat(self) -> int:
+        return self._cp["payments"].getint("min_sat")
 
     # server
     @property

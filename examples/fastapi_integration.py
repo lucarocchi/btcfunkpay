@@ -263,6 +263,15 @@ DEMO_HTML = """<!DOCTYPE html>
       transition: border-color 0.15s;
     }
     .new-btn:hover { border-color: #f7931a; color: #f7931a; background: none; }
+
+    .oss-footer {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 11px;
+      color: #bbb;
+    }
+    .oss-footer a { color: #bbb; text-decoration: none; }
+    .oss-footer a:hover { color: #f7931a; }
   </style>
 </head>
 <body>
@@ -329,9 +338,13 @@ DEMO_HTML = """<!DOCTYPE html>
     <button class="new-btn" id="cancel-btn" onclick="reset()">Cancel</button>
   </div>
 </div>
+<p class="oss-footer">
+  <a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener">Open source</a>
+  &nbsp;·&nbsp; MIT License
+</p>
 
 <script>
-  const MIN_SAT = 1000;  // configurable minimum
+  const MIN_SAT = __MIN_SAT__;
 
   // read URL params passed by widget.js
   const _params = new URLSearchParams(location.search);
@@ -626,7 +639,7 @@ def funkpay_js():
 
 @app.get("/", response_class=HTMLResponse)
 def demo_page():
-    return DEMO_HTML
+    return DEMO_HTML.replace("__MIN_SAT__", str(cfg.min_sat))
 
 
 @app.post("/invoices")

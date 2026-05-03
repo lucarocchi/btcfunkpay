@@ -26,6 +26,9 @@ poll_interval = 30
 # Invoice expiry in seconds (0 = never expires)
 expiry_seconds = 3600
 
+# Minimum payment amount in satoshis (Pay button stays disabled below this)
+min_sat = 1000
+
 [server]
 # SQLite database path (relative to working directory or absolute)
 db_path = btcfunkpay.sqlite
