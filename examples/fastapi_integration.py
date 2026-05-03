@@ -384,7 +384,7 @@ DEMO_HTML = """<!DOCTYPE html>
     </div>
 
     <div class="pay-hint">
-      Enter an amount above, or leave blank to donate any amount.<br>
+      Enter an amount in fiat or BTC — both fields stay in sync.<br>
       Click <b>Pay</b> — a QR code will appear. Scan it with your Bitcoin wallet.<br>
       Funds arrive directly on-chain. No account, no intermediary.
     </div>
