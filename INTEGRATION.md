@@ -122,9 +122,10 @@ FunkPay doesn't build the overlay — you do. Position the div however you want:
 | Attribute | Default | Description |
 |-----------|---------|-------------|
 | `data-currency` | `USD` | Fiat display currency: `USD` `EUR` `GBP` `JPY` `CAD` `CHF` `AUD` |
-| `data-amount` | — | Pre-fill amount in satoshis |
+| `data-amount` | — | Pre-fill amount in satoshis (always satoshis, regardless of `data-currency`) |
 | `data-label` | — | Order or user identifier stored with the invoice |
 | `data-theme` | `auto` | Color theme: `light`, `dark`, or `auto` (follows system `prefers-color-scheme`) |
+| `data-server` | — | Base URL of your self-hosted backend (e.g. `https://pay.mysite.com`). If omitted, the widget uses `btcfunk.com/pay`. |
 
 **Events:**
 
@@ -203,7 +204,7 @@ Response:
 ### Installation
 
 ```bash
-git clone root@178.104.206.139:/opt/btcfunkpay.git
+git clone https://github.com/lucarocchi/btcfunkpay.git
 cd btcfunkpay
 python3 -m venv venv
 source venv/bin/activate
@@ -245,6 +246,17 @@ Environment variables override the config file (useful for Docker):
 ```bash
 uvicorn server:app --host 127.0.0.1 --port 8001
 ```
+
+### Point the widget to your server
+
+Once your server is running, embed the widget with `data-server` pointing to your backend:
+
+```html
+<div id="funkpay" data-currency="EUR" data-server="https://pay.mysite.com"></div>
+<script src="https://btcfunk.com/pay/funkpay.js"></script>
+```
+
+The widget script stays on `btcfunk.com` — only the API calls go to your server.
 
 ### CORS
 

@@ -449,6 +449,7 @@
     var currentAddress = '';
     var allPrices     = {};
     var updatingFrom  = null;
+    var base          = opts.server || _base;
 
     // --- apply theme ---
     var wrapper = root.querySelector('.card').parentElement;
@@ -496,7 +497,7 @@
 
     async function fetchPrice() {
       try {
-        var r = await fetch(_base + '/prices');
+        var r = await fetch(base + '/prices');
         allPrices = await r.json();
         var price = selectedPrice();
         if (price) {
@@ -573,7 +574,7 @@
       var label = opts.label || null;
 
       try {
-        var res = await fetch(_base + '/invoices', {
+        var res = await fetch(base + '/invoices', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amount_sat: amount_sat, label: label }),
@@ -624,7 +625,7 @@
     async function poll() {
       if (!paymentId) return;
       try {
-        var res = await fetch(_base + '/invoices/' + paymentId);
+        var res = await fetch(base + '/invoices/' + paymentId);
         if (!res.ok) return;
         var data = await res.json();
         updateStatus(data);
@@ -773,11 +774,13 @@
   function _auto() {
     var el = document.getElementById('funkpay');
     if (!el) return;
+    var server = (el.getAttribute('data-server') || '').replace(/\/$/, '');
     _mount(el, {
       currency: el.getAttribute('data-currency') || '',
       theme:    el.getAttribute('data-theme')    || 'auto',
       label:    el.getAttribute('data-label')    || '',
       amount:   el.getAttribute('data-amount')   || '',
+      server:   server,
     });
   }
 
