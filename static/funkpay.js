@@ -201,15 +201,15 @@
     #form { flex: 1; display: flex; flex-direction: column; }
 
     .pay-hint {
-      margin-top: auto;
-      margin-bottom: 14px;
+      margin-top: 14px;
+      margin-bottom: 0;
       font-size: 12px;
-      color: #999999;
+      color: #888888;
       line-height: 1.6;
     }
-    [data-theme="dark"] .pay-hint { color: #666666; }
+    [data-theme="dark"] .pay-hint { color: #888888; }
     .pay-hint b { color: #555555; font-weight: 600; }
-    [data-theme="dark"] .pay-hint b { color: #aaaaaa; }
+    [data-theme="dark"] .pay-hint b { color: #bbbbbb; }
 
     /* ---- invoice panel ---- */
     #invoice { display: none; flex: 1; margin-top: 14px; flex-direction: column; }
@@ -370,9 +370,9 @@
         </div>
 
         <div class="pay-hint">
-          Enter fiat or BTC — fields sync automatically. Click <b>Pay</b>, scan the QR with your Bitcoin wallet, funds land on-chain. No account, no intermediary. <a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener" style="opacity:0.65;color:inherit;text-decoration:underline;text-underline-offset:2px;">Open source · MIT</a>
+          Enter fiat or BTC — fields sync automatically.<br>Click <b>Pay</b>, scan the QR with your Bitcoin wallet, funds land on-chain.<br>No account, no intermediary. <a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">Open source · MIT</a>
         </div>
-        <button type="submit" id="submit-btn" disabled>Pay</button>
+        <button type="submit" id="submit-btn" style="margin-top:auto;" disabled>Pay</button>
       </form>
 
       <div id="invoice">
