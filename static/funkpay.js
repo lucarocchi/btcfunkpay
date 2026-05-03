@@ -401,7 +401,7 @@
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;">
           <span id="cancel-btn" style="font-size:12px;color:#f7931a;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">Cancel</span>
-          <span id="paid-btn" style="font-size:12px;color:#f7931a;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">I’ve paid →</span>
+          <span id="paid-btn" style="font-size:15px;font-weight:700;color:#22c55e;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">I’ve paid →</span>
         </div>
       </div>
 
