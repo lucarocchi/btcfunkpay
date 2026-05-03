@@ -75,9 +75,8 @@ DEMO_HTML = """<!DOCTYPE html>
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: transparent;
       color: var(--text);
-      min-height: 100vh;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       padding: 24px;
     }
@@ -467,6 +466,11 @@ DEMO_HTML = """<!DOCTYPE html>
       updatePayBtn();
     } catch (_) {}
   }
+  function notifyHeight() {
+    window.parent.postMessage({ type: 'funkpay:resize', height: document.body.scrollHeight }, '*');
+  }
+  window.addEventListener('load', notifyHeight);
+
   fetchPrice();
 
   // currency change: re-convert from BTC side
@@ -569,6 +573,7 @@ DEMO_HTML = """<!DOCTYPE html>
     });
 
     startPolling();
+    setTimeout(notifyHeight, 50);
   }
 
   function startPolling() {

@@ -31,6 +31,7 @@
   })();
 
   var _callbacks = {};
+  var _iframe = null;
 
   function _detectTheme() {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
@@ -50,17 +51,20 @@
 
   function _onMessage(e) {
     if (!e.data || typeof e.data.type !== 'string') return;
+    if (e.data.type === 'funkpay:resize' && _iframe) {
+      _iframe.style.height = (e.data.height + 1) + 'px';
+    }
     if (e.data.type === 'funkpay:confirmed' && _callbacks.confirmed) _callbacks.confirmed(e.data.payment);
     if (e.data.type === 'funkpay:expired'   && _callbacks.expired)   _callbacks.expired(e.data.payment);
   }
 
   function _mount(container, opts) {
     container.innerHTML = '';
-    var iframe = document.createElement('iframe');
-    iframe.setAttribute('allow', 'clipboard-write');
-    iframe.style.cssText = 'border:none;width:100%;height:640px;border-radius:12px;';
-    iframe.src = _buildSrc(opts);
-    container.appendChild(iframe);
+    _iframe = document.createElement('iframe');
+    _iframe.setAttribute('allow', 'clipboard-write');
+    _iframe.style.cssText = 'border:none;width:100%;height:480px;border-radius:12px;display:block;';
+    _iframe.src = _buildSrc(opts);
+    container.appendChild(_iframe);
     window.addEventListener('message', _onMessage);
   }
 
