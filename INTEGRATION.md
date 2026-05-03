@@ -243,7 +243,7 @@ Environment variables override the config file (useful for Docker):
 ### Run
 
 ```bash
-uvicorn examples.server:app --host 127.0.0.1 --port 8001
+uvicorn server:app --host 127.0.0.1 --port 8001
 ```
 
 ### CORS
@@ -282,7 +282,7 @@ After=network.target bitcoind.service
 [Service]
 WorkingDirectory=/opt/btcfunkpay
 EnvironmentFile=/opt/btcfunkpay/.env
-ExecStart=/opt/btcfunkpay/venv/bin/uvicorn examples.server:app \
+ExecStart=/opt/btcfunkpay/venv/bin/uvicorn server:app \
           --host 127.0.0.1 --port 8001
 Restart=always
 

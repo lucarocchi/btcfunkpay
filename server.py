@@ -3,7 +3,7 @@ FastAPI integration example — btcfunkpay backend.
 
 Usage:
   pip install fastapi uvicorn httpx
-  uvicorn examples.server:app --reload
+  uvicorn server:app --reload
 """
 
 import time
