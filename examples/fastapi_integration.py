@@ -633,7 +633,7 @@ DEMO_HTML = """<!DOCTYPE html>
 
     const txidRow = document.getElementById('txid-row');
     if (data.txid) {
-      txidRow.innerHTML = 'txid: <span style="cursor:pointer;text-decoration:underline;text-underline-offset:2px" title="Copy txid" onclick="navigator.clipboard.writeText(\'' + data.txid + '\').then(function(){var el=document.getElementById(\'txid-row\');var prev=el.style.color;el.style.color=\'#22c55e\';setTimeout(function(){el.style.color=prev;},800);})">' + data.txid + '</span>';
+      txidRow.innerHTML = `txid: <span style="cursor:pointer;text-decoration:underline;text-underline-offset:2px" title="Copy txid" onclick="navigator.clipboard.writeText('${data.txid}').then(function(){var el=document.getElementById('txid-row');var prev=el.style.color;el.style.color='#22c55e';setTimeout(function(){el.style.color=prev;},800);})">${data.txid}</span>`;
     }
 
     // show success screen on detected or confirmed
