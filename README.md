@@ -136,7 +136,7 @@ Waiting for confirmation...
 ### 4. Or run the web widget server
 
 ```bash
-uvicorn examples.fastapi_integration:app --port 8001
+uvicorn examples.server:app --port 8001
 # then embed the widget on your page pointing to http://localhost:8001
 ```
 
