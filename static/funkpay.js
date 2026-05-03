@@ -282,36 +282,33 @@
     .status-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 8px;
-      border: 1px solid #eeeeee;
-      font-size: 13px;
+      gap: 6px;
+      font-size: 12px;
       font-weight: 500;
+      margin-top: 4px;
     }
-    [data-theme="dark"] .status-row { border-color: #2e2e2e; }
 
     .dot {
-      width: 8px; height: 8px;
+      width: 7px; height: 7px;
       border-radius: 50%;
       flex-shrink: 0;
     }
 
-    .status-pending   { border-color: #eeeeee; color: #888888; }
-    [data-theme="dark"] .status-pending { border-color: #2e2e2e; color: #666666; }
-    .status-pending .dot { background: #cccccc; }
-    [data-theme="dark"] .status-pending .dot { background: #333333; }
+    .status-pending   { color: #999999; }
+    [data-theme="dark"] .status-pending { color: #666666; }
+    .status-pending .dot { background: #cccccc; animation: pulse 1.4s infinite; }
+    [data-theme="dark"] .status-pending .dot { background: #444444; }
 
-    .status-detected  { border-color: #ffe0a0; background: #fff8ee; color: #b06000; }
+    .status-detected  { color: #b06000; }
     .status-detected .dot { background: #f7931a; animation: pulse 1.2s infinite; }
 
-    .status-confirmed { border-color: #a7f3d0; background: #f0fdf4; color: #15803d; }
+    .status-confirmed { color: #15803d; }
     .status-confirmed .dot { background: #22c55e; }
 
-    .status-overpaid  { border-color: #a7f3d0; background: #f0fdf4; color: #15803d; }
+    .status-overpaid  { color: #15803d; }
     .status-overpaid .dot  { background: #22c55e; }
 
-    .status-expired   { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+    .status-expired   { color: #b91c1c; }
     .status-expired .dot  { background: #ef4444; }
 
     @keyframes pulse {
