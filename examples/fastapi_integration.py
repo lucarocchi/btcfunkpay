@@ -617,9 +617,9 @@ class InvoiceRequest(BaseModel):
     label: str | None = None
 
 
-@app.get("/widget.js")
-def widget_js():
-    path = _STATIC_DIR / "widget.js"
+@app.get("/funkpay.js")
+def funkpay_js():
+    path = _STATIC_DIR / "funkpay.js"
     return Response(content=path.read_text(), media_type="application/javascript",
                     headers={"Cache-Control": "public, max-age=3600"})
 

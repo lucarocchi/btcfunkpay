@@ -15,7 +15,7 @@
     var scripts = document.querySelectorAll('script[src]');
     for (var i = 0; i < scripts.length; i++) {
       var s = scripts[i].src;
-      if (s.indexOf('widget.js') !== -1) return s.replace('/widget.js', '');
+      if (s.indexOf('funkpay.js') !== -1) return s.replace('/funkpay.js', '');
     }
     return '';
   })();
