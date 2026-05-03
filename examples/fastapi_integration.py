@@ -348,7 +348,7 @@ DEMO_HTML = """<!DOCTYPE html>
       <label class="input-label" for="amount-btc">Bitcoin</label>
       <div class="field-wrap">
         <span class="field-icon btc">₿</span>
-        <input id="amount-btc" type="number" placeholder="0.00000000" min="0" step="0.00000001">
+        <input id="amount-btc" type="text" inputmode="decimal" placeholder="0.00000000" pattern="[0-9]*\.?[0-9]*">
       </div>
     </div>
 
@@ -390,6 +390,11 @@ DEMO_HTML = """<!DOCTYPE html>
 <script>
   const MIN_SAT = __MIN_SAT__;
 
+  const CURRENCY_SYMBOLS = {
+    USD: '$', EUR: '€', GBP: '£', JPY: '¥', CAD: 'C$', CHF: 'Fr', AUD: 'A$',
+  };
+  const FIAT_DECIMALS = { JPY: 0 };
+
   // apply theme
   const _params = new URLSearchParams(location.search);
   (function() {
@@ -405,14 +410,8 @@ DEMO_HTML = """<!DOCTYPE html>
     const sat = parseInt(_params.get('amount'));
     if (sat > 0) {
       document.getElementById('amount-btc').value = (sat / 1e8).toFixed(8);
-      // fiat fill happens after fetchPrice resolves
     }
   }
-
-  const CURRENCY_SYMBOLS = {
-    USD: '$', EUR: '€', GBP: '£', JPY: '¥', CAD: 'C$', CHF: 'Fr', AUD: 'A$',
-  };
-  const FIAT_DECIMALS = { JPY: 0 };
 
   let paymentId = null;
   let pollTimer = null;
