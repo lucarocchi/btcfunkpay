@@ -25,7 +25,14 @@
     var scripts = document.querySelectorAll('script[src]');
     for (var i = 0; i < scripts.length; i++) {
       var s = scripts[i].src;
-      if (s.indexOf('funkpay.js') !== -1) return s.replace('/funkpay.js', '');
+      if (s.indexOf('funkpay.js') !== -1) {
+        try {
+          var u = new URL(s);
+          return u.origin + u.pathname.replace(/\/funkpay\.js$/, '');
+        } catch (_) {
+          return s.replace(/\/funkpay\.js(\?.*)?$/, '');
+        }
+      }
     }
     return '';
   })();
