@@ -370,7 +370,7 @@
         </div>
 
         <div class="pay-hint">
-          Enter fiat or BTC.<br>Click <b>Pay</b>, scan the QR with your Bitcoin wallet and<br>Send.<br><a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">Open source · MIT</a>
+          Enter fiat or BTC amount.<br>Click <b>Pay</b>, scan the QR with your Bitcoin wallet and<br>Send.<br><a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">Open source · MIT</a>
         </div>
         <button type="submit" id="submit-btn" style="margin-top:auto;" disabled>Pay</button>
       </form>
