@@ -296,8 +296,8 @@
 
     .status-pending   { color: #999999; }
     [data-theme="dark"] .status-pending { color: #666666; }
-    .status-pending .dot { background: #cccccc; animation: pulse 1.4s infinite; }
-    [data-theme="dark"] .status-pending .dot { background: #444444; }
+    .status-pending .dot { background: #22c55e; animation: pulse 1.4s infinite; }
+    [data-theme="dark"] .status-pending .dot { background: #22c55e; }
 
     .status-detected  { color: #b06000; }
     .status-detected .dot { background: #f7931a; animation: pulse 1.2s infinite; }
