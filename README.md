@@ -28,7 +28,7 @@ It also ships an **embeddable JS widget** — drop one `<script>` tag on any pag
 </script>
 ```
 
-**Live demo → [btcfunk.com/pay](https://btcfunk.com/pay/)**
+**Live demo → [btcfunk.com/#support](https://btcfunk.com/#support)**
 
 ---
 
