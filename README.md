@@ -110,7 +110,30 @@ proc.start()
 proc.run_forever()
 ```
 
-### 3. Or run the demo server
+### 3. Or run the terminal monitor
+
+No web server needed — run this script, enter an amount, share the address with your customer, and wait:
+
+```bash
+python3 examples/standalone.py
+```
+
+```
+=== FunkPay — new invoice ===
+Amount in satoshis (leave blank for open amount): 50000
+Label (customer email, order ID, ...): mario@gmail.com
+
+  Address : bc1q...
+  BIP21   : bitcoin:bc1q...?amount=0.00050000&label=mario%40gmail.com
+  Expires : 14:32:00
+
+Waiting for payment... (Ctrl+C to cancel)
+[mempool] Transaction detected — 50000 sat (txid: abc123...)
+Waiting for confirmation...
+[confirmed] Payment confirmed — 50000 sat  label=mario@gmail.com
+```
+
+### 4. Or run the web widget server
 
 ```bash
 uvicorn examples.fastapi_integration:app --port 8001
