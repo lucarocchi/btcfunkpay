@@ -21,7 +21,7 @@ FunkPay is a Python library for accepting Bitcoin on-chain payments. It derives 
 It also ships an **embeddable JS widget** — drop one `<script>` tag on any page and a payment widget appears inline, like Stripe but Bitcoin.
 
 ```html
-<div id="funkpay" data-currency="EUR" data-amount="50000" data-label="user-42"></div>
+<div id="funkpay" data-currency="EUR" data-label="user-42"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
   FunkPay.on('confirmed', (payment) => activateSubscription(payment.label));
