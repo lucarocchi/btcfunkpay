@@ -24,6 +24,9 @@ _DEFAULTS = {
         "host": "127.0.0.1",
         "port": "8001",
     },
+    "notifications": {
+        "webhook_url": "",
+    },
 }
 
 _ENV_MAP = {
@@ -39,6 +42,7 @@ _ENV_MAP = {
     "BTCFUNKPAY_DB_PATH":                 ("server",   "db_path"),
     "BTCFUNKPAY_HOST":                    ("server",   "host"),
     "BTCFUNKPAY_PORT":                    ("server",   "port"),
+    "BTCFUNKPAY_WEBHOOK_URL":             ("notifications", "webhook_url"),
 }
 
 
@@ -109,6 +113,11 @@ class Config:
     @property
     def port(self) -> int:
         return self._cp["server"].getint("port")
+
+    # notifications
+    @property
+    def webhook_url(self) -> str:
+        return self._cp.get("notifications", "webhook_url", fallback="")
 
     def validate(self) -> None:
         if not self.xpub:

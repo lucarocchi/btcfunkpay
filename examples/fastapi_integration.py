@@ -401,14 +401,16 @@ DEMO_HTML = """<!DOCTYPE html>
     </div>
     <div class="txid" id="txid-row"></div>
 
-    <div style="text-align:right;margin-top:auto;padding-top:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;">
       <span id="cancel-btn" onclick="reset()" style="font-size:12px;color:#f7931a;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">Cancel</span>
+      <span onclick="showThankYou()" style="font-size:12px;color:#f7931a;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">I've paid →</span>
     </div>
   </div>
 
   <div id="payment-success">
     <div class="check">✓</div>
-    <div class="ok-title">Payment received!</div>
+    <div class="ok-title" id="ok-title">Payment received!</div>
+    <div class="ok-sub" id="ok-sub" style="display:none;font-size:12px;color:var(--text-muted);margin-bottom:8px;line-height:1.5;text-align:center;"></div>
     <div class="ok-amount" id="ok-amount"></div>
     <div class="ok-txid" id="ok-txid" title="Click to copy txid"></div>
   </div>
@@ -639,6 +641,8 @@ DEMO_HTML = """<!DOCTYPE html>
       document.getElementById('form').style.display = 'none';
       const s = document.getElementById('payment-success');
       s.style.display = 'block';
+      document.getElementById('ok-title').textContent = 'Payment received!';
+      document.getElementById('ok-sub').style.display = 'none';
       const sat = data.received_sat || 0;
       document.getElementById('ok-amount').textContent = (sat / 1e8).toFixed(8) + ' BTC received';
       if (data.txid) {
@@ -670,6 +674,19 @@ DEMO_HTML = """<!DOCTYPE html>
       btn.textContent = 'Copied';
       setTimeout(() => btn.textContent = 'Copy', 1500);
     });
+  }
+
+  function showThankYou() {
+    clearInterval(pollTimer);
+    document.getElementById('invoice').style.display = 'none';
+    document.getElementById('form').style.display = 'none';
+    const s = document.getElementById('payment-success');
+    s.style.display = 'block';
+    document.getElementById('ok-title').textContent = 'Thank you!';
+    document.getElementById('ok-sub').textContent = 'Your transaction is on its way. It will confirm automatically on-chain.';
+    document.getElementById('ok-sub').style.display = 'block';
+    document.getElementById('ok-amount').textContent = '';
+    document.getElementById('ok-txid').textContent = '';
   }
 
   function reset() {
@@ -709,8 +726,26 @@ async def lifespan(app: FastAPI):
 
     @proc.on_payment
     async def handle(event: PaymentEvent):
-        if event.is_first_confirmation:
-            print(f"CONFIRMED: {event.received_sat} sat for label={event.label}")
+        import logging
+        logger = logging.getLogger("btcfunkpay")
+        status = event.status.value if hasattr(event.status, "value") else str(event.status)
+        logger.info(f"payment {event.payment_id}: {status} — {event.received_sat} sat label={event.label}")
+        if cfg.webhook_url and event.is_first_detection or event.is_first_confirmation:
+            import httpx
+            payload = {
+                "payment_id": event.payment_id,
+                "label":      event.label,
+                "status":     status,
+                "received_sat": event.received_sat,
+                "txid":       event.txid,
+                "address":    event.address,
+                "confirmations": event.confirmations,
+            }
+            try:
+                async with httpx.AsyncClient(timeout=10) as c:
+                    await c.post(cfg.webhook_url, json=payload)
+            except Exception as e:
+                logger.warning(f"webhook POST failed: {e}")
 
     app.state.proc = proc
     await proc.astart()

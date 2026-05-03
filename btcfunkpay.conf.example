@@ -36,3 +36,8 @@ db_path = btcfunkpay.sqlite
 # Host and port for the demo FastAPI server
 host = 127.0.0.1
 port = 8001
+
+[notifications]
+# URL to POST payment events to (leave blank to disable)
+# Payload: { payment_id, label, status, received_sat, txid, address, confirmations }
+webhook_url =
