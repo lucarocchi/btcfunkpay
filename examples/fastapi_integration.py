@@ -318,20 +318,6 @@ DEMO_HTML = """<!DOCTYPE html>
       50%       { opacity: 0.35; }
     }
 
-    .new-btn {
-      margin-top: 12px;
-      background: none;
-      border: 1px solid var(--input-bd);
-      color: var(--copy-text);
-      border-radius: 8px;
-      padding: 9px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      width: 100%;
-      transition: border-color 0.15s;
-    }
-    .new-btn:hover { border-color: #f7931a; color: #f7931a; background: none; }
 
     .oss-footer {
       margin-top: 10px;
@@ -405,7 +391,6 @@ DEMO_HTML = """<!DOCTYPE html>
 
     <div class="meta-row">
       <span id="amount-label"></span>
-      <span id="expires-label"></span>
     </div>
 
     <div class="status-row status-pending" id="status-row">
@@ -414,7 +399,9 @@ DEMO_HTML = """<!DOCTYPE html>
     </div>
     <div class="txid" id="txid-row"></div>
 
-    <button class="new-btn" id="cancel-btn" onclick="reset()">Cancel</button>
+    <div style="text-align:right;margin-top:10px;">
+      <span id="cancel-btn" onclick="reset()" style="font-size:12px;color:#f7931a;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">Cancel</span>
+    </div>
   </div>
 
   <div id="payment-success">
@@ -596,11 +583,6 @@ DEMO_HTML = """<!DOCTYPE html>
       : 'Any amount';
     document.getElementById('amount-label').textContent = amountLabel;
 
-    if (data.expires_at) {
-      const exp = new Date(data.expires_at);
-      document.getElementById('expires-label').textContent =
-        'Expires ' + exp.toLocaleTimeString();
-    }
 
     document.getElementById('qrcode').innerHTML = '';
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
