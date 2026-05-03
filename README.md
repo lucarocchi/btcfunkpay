@@ -16,6 +16,23 @@
 
 ---
 
+## Philosophy
+
+Bitcoin confirmations can take up to an hour. FunkPay doesn't make you wait.
+
+The moment a transaction hits the mempool, the UX unlocks. For most use cases — digital goods, donations, subscriptions — that's enough. Double-spend attacks on small amounts are economically irrational: the cost of executing one far exceeds the value of any typical transaction.
+
+FunkPay gives you two signals, and lets you decide what to do with each:
+
+- **`detected`** (mempool) — transaction is visible on the network. Unlock the UX, start a timed trial, show a thank-you screen.
+- **`confirmed`** (N confirmations) — transaction is settled. Ship the physical good, activate the account permanently, fire the webhook.
+
+Never ship an irreversible good before `confirmed`. For everything else, the mempool is your friend.
+
+This isn't a workaround — it's the same logic behind every contactless payment terminal in the world. The merchant accepts a calculated risk because the friction of waiting costs more than the fraud it prevents.
+
+---
+
 FunkPay is a Python library for accepting Bitcoin on-chain payments. It derives receive addresses from your **xpub** (no private keys), monitors transactions via your own **Bitcoin Core node**, and fires callbacks when payments arrive.
 
 It also ships an **embeddable JS widget** — drop one `<script>` tag on any page and a payment widget appears inline, like Stripe but Bitcoin.
