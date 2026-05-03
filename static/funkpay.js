@@ -372,7 +372,7 @@
         </div>
 
         <div class="pay-hint">
-          Enter fiat or BTC — fields sync automatically. Click <b>Pay</b>, scan the QR with your Bitcoin wallet, funds land on-chain. No account, no intermediary. <span style="opacity:0.65">Open source · MIT</span>
+          Enter fiat or BTC — fields sync automatically. Click <b>Pay</b>, scan the QR with your Bitcoin wallet, funds land on-chain. No account, no intermediary. <a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener" style="opacity:0.65;color:inherit;text-decoration:underline;text-underline-offset:2px;">Open source · MIT</a>
         </div>
         <button type="submit" id="submit-btn" disabled>Pay</button>
       </form>
