@@ -165,7 +165,7 @@ uvicorn examples.fastapi_integration:app --port 8001
 | Attribute | Description |
 |-----------|-------------|
 | `data-currency` | Fiat currency: `USD` `EUR` `GBP` `JPY` `CAD` `CHF` `AUD` |
-| `data-amount` | Pre-fill amount in satoshis |
+| `data-amount` | Pre-fill amount in satoshis (always satoshis, regardless of `data-currency`) |
 | `data-label` | Order / user identifier |
 | `data-theme` | `light` \| `dark` \| `auto` (default: auto-detect) |
 
