@@ -204,6 +204,17 @@ DEMO_HTML = """<!DOCTYPE html>
     button:disabled { background: var(--btn-dis); cursor: default; }
     #submit-btn { transition: background 0.15s, opacity 0.15s; }
 
+    #form { display: flex; flex-direction: column; }
+
+    .pay-hint {
+      margin-top: auto;
+      margin-bottom: 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .pay-hint b { color: var(--text-sub); font-weight: 600; }
+
     /* ---- invoice panel ---- */
     #invoice { display: none; margin-top: 14px; }
 
@@ -372,6 +383,11 @@ DEMO_HTML = """<!DOCTYPE html>
       </div>
     </div>
 
+    <div class="pay-hint">
+      Enter an amount above, or leave blank to donate any amount.<br>
+      Click <b>Pay</b> — a QR code will appear. Scan it with your Bitcoin wallet.<br>
+      Funds arrive directly on-chain. No account, no intermediary.
+    </div>
     <button type="submit" id="submit-btn" disabled>Pay</button>
   </form>
 
