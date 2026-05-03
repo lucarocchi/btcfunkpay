@@ -216,7 +216,7 @@ DEMO_HTML = """<!DOCTYPE html>
     .pay-hint b { color: var(--text-sub); font-weight: 600; }
 
     /* ---- invoice panel ---- */
-    #invoice { display: none; margin-top: 14px; }
+    #invoice { display: none; margin-top: 14px; flex-direction: column; }
 
     .divider {
       border: none;
@@ -399,7 +399,7 @@ DEMO_HTML = """<!DOCTYPE html>
     </div>
     <div class="txid" id="txid-row"></div>
 
-    <div style="text-align:right;margin-top:10px;">
+    <div style="text-align:right;margin-top:auto;padding-top:10px;">
       <span id="cancel-btn" onclick="reset()" style="font-size:12px;color:#f7931a;cursor:pointer;text-decoration:underline;text-underline-offset:2px;">Cancel</span>
     </div>
   </div>
@@ -575,7 +575,7 @@ DEMO_HTML = """<!DOCTYPE html>
     currentAddress = data.address;
 
     document.getElementById('address-text').textContent = data.address;
-    document.getElementById('invoice').style.display = 'block';
+    document.getElementById('invoice').style.display = 'flex';
     document.getElementById('form').style.display = 'none';
 
     const amountLabel = data.amount_sat
