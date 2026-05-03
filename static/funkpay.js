@@ -100,13 +100,11 @@
 
     #payment-success {
       display: none;
-      text-align: center;
       flex: 1;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
     }
-    #payment-success .ok-title { font-size: 1.1rem; font-weight: 700; color: #22c55e; margin-bottom: 4px; }
+    #success-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    #payment-success .ok-title { font-size: 1.1rem; font-weight: 700; color: #22c55e; margin-bottom: 8px; }
     #payment-success .ok-amount { font-size: 0.85rem; color: #555555; margin-bottom: 8px; }
     [data-theme="dark"] #payment-success .ok-amount { color: #aaaaaa; }
     #payment-success .ok-txid { font-size: 10px; font-family: monospace; color: #999999; word-break: break-all; cursor: pointer; }
@@ -406,10 +404,14 @@
       </div>
 
       <div id="payment-success">
-        <div class="ok-title" id="ok-title">Payment received!</div>
-        <div class="ok-sub" id="ok-sub" style="display:none;font-size:12px;color:#999999;margin-bottom:8px;line-height:1.5;text-align:center;"></div>
-        <div class="ok-amount" id="ok-amount"></div>
-        <div class="ok-txid" id="ok-txid" title="Click to copy txid"></div>
+        <div id="success-content">
+          <div class="ok-title" id="ok-title">Payment received!</div>
+          <div class="ok-sub" id="ok-sub" style="display:none;font-size:12px;color:#999999;margin-bottom:12px;line-height:1.6;"></div>
+          <div class="ok-amount" id="ok-amount"></div>
+          <div class="ok-txid" id="ok-txid" title="Click to copy txid"></div>
+          <span id="share-btn" style="font-size:12px;color:#f7931a;cursor:pointer;margin-top:12px;display:inline-block;">Share FunkPay →</span>
+        </div>
+        <button id="thankyou-btn" style="background:#22c55e;margin-top:auto;">Thank you</button>
       </div>
     </div>
   `;
@@ -661,7 +663,7 @@
         root.getElementById('invoice').style.display = 'none';
         root.getElementById('form').style.display = 'none';
         var s = root.getElementById('payment-success');
-        s.style.display = 'block';
+        s.style.display = 'flex';
         root.getElementById('ok-title').textContent = 'Payment received!';
         var okSubConfirmed = root.getElementById('ok-sub');
         okSubConfirmed.textContent = 'Your payment has been confirmed on the Bitcoin network. Thank you for paying with Bitcoin!';
@@ -705,6 +707,27 @@
 
     // cancel button
     root.getElementById('cancel-btn').addEventListener('click', function() {
+      reset();
+    });
+
+    // share button
+    root.getElementById('share-btn').addEventListener('click', function() {
+      var url = 'https://btcfunk.com/#support';
+      var text = 'I just paid with Bitcoin via FunkPay — open source, self-custodial payments. No middlemen.';
+      if (navigator.share) {
+        navigator.share({ title: 'FunkPay', text: text, url: url });
+      } else {
+        navigator.clipboard.writeText(url).then(function() {
+          var btn = root.getElementById('share-btn');
+          var prev = btn.textContent;
+          btn.textContent = 'Link copied!';
+          setTimeout(function() { btn.textContent = prev; }, 1500);
+        });
+      }
+    });
+
+    // thank you button
+    root.getElementById('thankyou-btn').addEventListener('click', function() {
       reset();
     });
 
