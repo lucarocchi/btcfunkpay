@@ -8,5 +8,6 @@ build/
 *.sqlite
 *.sqlite3
 .env
+btcfunkpay.conf
 venv/
 .venv/

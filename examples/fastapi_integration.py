@@ -12,12 +12,9 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 
-from btcfunkpay import PaymentProcessor, PaymentEvent, PaymentStatus
+from btcfunkpay import PaymentProcessor, PaymentEvent, PaymentStatus, load_config
 
-import os
-
-XPUB = os.environ["BTCFUNKPAY_XPUB"]
-RPC_URL = os.environ["BTCFUNKPAY_RPC_URL"]
+cfg = load_config()
 
 DEMO_HTML = """<!DOCTYPE html>
 <html lang="en">
@@ -648,7 +645,16 @@ WIDGET_JS = r"""
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    proc = PaymentProcessor(xpub=XPUB, rpc_url=RPC_URL, required_confirmations=1)
+    proc = PaymentProcessor(
+        xpub=cfg.xpub,
+        rpc_url=cfg.rpc_url,
+        db_path=cfg.db_path,
+        required_confirmations=cfg.required_confirmations,
+        poll_interval=cfg.poll_interval,
+        expiry_seconds=cfg.expiry_seconds,
+        mainnet=cfg.mainnet,
+        wallet_name=cfg.wallet_name,
+    )
     proc.setup()
 
     @proc.on_payment

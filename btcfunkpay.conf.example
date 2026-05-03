@@ -1,0 +1,35 @@
+# btcfunkpay configuration file
+# Copy to btcfunkpay.conf and fill in your values.
+# Environment variables override any setting here (see README).
+
+[bitcoin]
+# Your xpub or zpub (BIP84, watch-only)
+xpub = xpub6...
+
+# Bitcoin Core RPC URL — include credentials in the URL
+rpc_url = http://user:password@127.0.0.1:8332
+
+# Internal watch-only wallet name created in Bitcoin Core
+wallet_name = btcfunkpay
+
+# true for mainnet, false for testnet/regtest
+mainnet = true
+
+[payments]
+# Number of block confirmations before marking a payment confirmed
+# Use 0 for instant (mempool detection) — fine for low-value digital goods
+required_confirmations = 1
+
+# How often the monitor polls Bitcoin Core (seconds)
+poll_interval = 30
+
+# Invoice expiry in seconds (0 = never expires)
+expiry_seconds = 3600
+
+[server]
+# SQLite database path (relative to working directory or absolute)
+db_path = btcfunkpay.sqlite
+
+# Host and port for the demo FastAPI server
+host = 127.0.0.1
+port = 8001
