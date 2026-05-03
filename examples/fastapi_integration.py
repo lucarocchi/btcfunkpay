@@ -29,10 +29,52 @@ DEMO_HTML = """<!DOCTYPE html>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --bg:         #f5f5f5;
+      --card-bg:    #ffffff;
+      --card-bd:    #e0e0e0;
+      --text:       #111111;
+      --text-sub:   #555555;
+      --text-muted: #999999;
+      --input-bg:   #ffffff;
+      --input-bd:   #dddddd;
+      --input-text: #111111;
+      --addr-bg:    #f9f9f9;
+      --addr-bd:    #eeeeee;
+      --addr-text:  #333333;
+      --sep-bd:     #eeeeee;
+      --label-color:#999999;
+      --btn-dis:    #cccccc;
+      --copy-text:  #555555;
+      --meta-text:  #888888;
+      --status-bd:  #eeeeee;
+    }
+
+    [data-theme="dark"] {
+      --bg:         #0f0f0f;
+      --card-bg:    #1a1a1a;
+      --card-bd:    #2e2e2e;
+      --text:       #f0f0f0;
+      --text-sub:   #aaaaaa;
+      --text-muted: #666666;
+      --input-bg:   #242424;
+      --input-bd:   #3a3a3a;
+      --input-text: #f0f0f0;
+      --addr-bg:    #242424;
+      --addr-bd:    #333333;
+      --addr-text:  #cccccc;
+      --sep-bd:     #2e2e2e;
+      --label-color:#666666;
+      --btn-dis:    #333333;
+      --copy-text:  #888888;
+      --meta-text:  #666666;
+      --status-bd:  #2e2e2e;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f5f5;
-      color: #111;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -41,8 +83,8 @@ DEMO_HTML = """<!DOCTYPE html>
     }
 
     .card {
-      background: #fff;
-      border: 1px solid #e0e0e0;
+      background: var(--card-bg);
+      border: 1px solid var(--card-bd);
       border-radius: 12px;
       padding: 40px;
       width: 100%;
@@ -66,7 +108,7 @@ DEMO_HTML = """<!DOCTYPE html>
     .subtitle {
       font-size: 15px;
       font-weight: 600;
-      color: #555;
+      color: var(--text-sub);
       margin-bottom: 32px;
       line-height: 1.6;
       text-align: center;
@@ -78,7 +120,7 @@ DEMO_HTML = """<!DOCTYPE html>
       display: block;
       font-size: 11px;
       font-weight: 500;
-      color: #999;
+      color: var(--label-color);
       text-transform: uppercase;
       letter-spacing: 0.6px;
       margin-bottom: 6px;
@@ -104,11 +146,12 @@ DEMO_HTML = """<!DOCTYPE html>
 
     input {
       width: 100%;
-      border: 1px solid #ddd;
+      border: 1px solid var(--input-bd);
       border-radius: 8px;
       padding: 10px 12px 10px 32px;
       font-size: 14px;
-      color: #111;
+      color: var(--input-text);
+      background: var(--input-bg);
       outline: none;
       transition: border-color 0.15s;
     }
@@ -119,12 +162,12 @@ DEMO_HTML = """<!DOCTYPE html>
 
     #currency-select {
       width: 100%;
-      border: 1px solid #ddd;
+      border: 1px solid var(--input-bd);
       border-radius: 8px;
       padding: 10px 12px;
       font-size: 14px;
-      color: #111;
-      background: #fff;
+      color: var(--input-text);
+      background: var(--input-bg);
       outline: none;
       cursor: pointer;
     }
@@ -143,7 +186,7 @@ DEMO_HTML = """<!DOCTYPE html>
       transition: background 0.15s;
     }
     button:hover { background: #e8840f; }
-    button:disabled { background: #ccc; cursor: default; }
+    button:disabled { background: var(--btn-dis); cursor: default; }
     #submit-btn { transition: background 0.15s, opacity 0.15s; }
 
     /* ---- invoice panel ---- */
@@ -151,7 +194,7 @@ DEMO_HTML = """<!DOCTYPE html>
 
     .divider {
       border: none;
-      border-top: 1px solid #eee;
+      border-top: 1px solid var(--sep-bd);
       margin-bottom: 28px;
     }
 
@@ -164,14 +207,14 @@ DEMO_HTML = """<!DOCTYPE html>
     #qrcode canvas, #qrcode img { border-radius: 8px; }
 
     .address-box {
-      background: #f9f9f9;
-      border: 1px solid #eee;
+      background: var(--addr-bg);
+      border: 1px solid var(--addr-bd);
       border-radius: 8px;
       padding: 12px 14px;
       font-family: monospace;
       font-size: 12px;
       word-break: break-all;
-      color: #333;
+      color: var(--addr-text);
       margin-bottom: 16px;
       display: flex;
       align-items: center;
@@ -182,8 +225,8 @@ DEMO_HTML = """<!DOCTYPE html>
 
     .copy-btn {
       background: none;
-      border: 1px solid #ddd;
-      color: #555;
+      border: 1px solid var(--input-bd);
+      color: var(--copy-text);
       border-radius: 6px;
       padding: 4px 10px;
       font-size: 11px;
@@ -199,7 +242,7 @@ DEMO_HTML = """<!DOCTYPE html>
       display: flex;
       justify-content: space-between;
       font-size: 12px;
-      color: #888;
+      color: var(--meta-text);
       margin-bottom: 24px;
     }
 
@@ -221,8 +264,8 @@ DEMO_HTML = """<!DOCTYPE html>
       flex-shrink: 0;
     }
 
-    .status-pending   { border-color: #eee; color: #888; }
-    .status-pending .dot { background: #ccc; }
+    .status-pending   { border-color: var(--status-bd); color: var(--meta-text); }
+    .status-pending .dot { background: var(--btn-dis); }
 
     .status-detected  { border-color: #ffe0a0; background: #fff8ee; color: #b06000; }
     .status-detected .dot { background: #f7931a; animation: pulse 1.2s infinite; }
@@ -252,8 +295,8 @@ DEMO_HTML = """<!DOCTYPE html>
     .new-btn {
       margin-top: 20px;
       background: none;
-      border: 1px solid #ddd;
-      color: #555;
+      border: 1px solid var(--input-bd);
+      color: var(--copy-text);
       border-radius: 8px;
       padding: 9px;
       font-size: 13px;
@@ -268,9 +311,9 @@ DEMO_HTML = """<!DOCTYPE html>
       margin-top: 20px;
       text-align: center;
       font-size: 11px;
-      color: #999;
+      color: var(--text-muted);
     }
-    .oss-footer a { color: #999; text-decoration: none; }
+    .oss-footer a { color: var(--text-muted); text-decoration: none; }
     .oss-footer a:hover { color: #f7931a; }
   </style>
 </head>
@@ -347,8 +390,13 @@ DEMO_HTML = """<!DOCTYPE html>
 <script>
   const MIN_SAT = __MIN_SAT__;
 
-  // read URL params passed by widget.js
+  // apply theme
   const _params = new URLSearchParams(location.search);
+  (function() {
+    var t = _params.get('theme');
+    if (!t || t === 'auto') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
   if (_params.get('currency')) {
     const sel = document.getElementById('currency-select');
     if (sel) { sel.value = _params.get('currency'); updateFiatIcon(); }
@@ -508,12 +556,13 @@ DEMO_HTML = """<!DOCTYPE html>
     }
 
     document.getElementById('qrcode').innerHTML = '';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     new QRCode(document.getElementById('qrcode'), {
       text: data.bip21_uri,
       width: 200,
       height: 200,
-      colorDark: '#111',
-      colorLight: '#fff',
+      colorDark: isDark ? '#f0f0f0' : '#111111',
+      colorLight: isDark ? '#1a1a1a' : '#ffffff',
       correctLevel: QRCode.CorrectLevel.M,
     });
 

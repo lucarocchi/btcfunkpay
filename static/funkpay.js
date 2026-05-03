@@ -1,16 +1,20 @@
 /**
- * FunkPay Widget — embeddable Bitcoin payment modal
- * Usage:
- *   <script src="https://btcfunk.com/pay/widget.js"></script>
+ * FunkPay Widget — embeddable Bitcoin payment widget
+ *
+ * Inline (recommended):
+ *   <div id="funkpay"></div>
+ *   <script src="https://btcfunk.com/pay/funkpay.js"></script>
  *   <script>
- *     FunkPay.on('confirmed', function(payment) { ... });
- *     FunkPay.open({ amount_sat: 50000, label: 'user-42' });
+ *     FunkPay.on('confirmed', (p) => console.log('paid!', p));
+ *     FunkPay.mount('#funkpay', { currency: 'EUR' });
  *   </script>
+ *
+ * Modal (alternative):
+ *   FunkPay.open({ amount_sat: 50000, label: 'user-42' });
  */
 (function (global) {
   'use strict';
 
-  // Auto-detect base URL from this script's src attribute
   var _base = (function () {
     var scripts = document.querySelectorAll('script[src]');
     for (var i = 0; i < scripts.length; i++) {
@@ -21,27 +25,28 @@
   })();
 
   var _callbacks = {};
-  var _overlay = null;
+  var _overlay   = null;
 
-  function _injectStyles() {
-    if (document.getElementById('funkpay-styles')) return;
-    var style = document.createElement('style');
-    style.id = 'funkpay-styles';
-    style.textContent =
-      '#funkpay-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);' +
-      'display:flex;align-items:center;justify-content:center;z-index:2147483647;' +
-      'backdrop-filter:blur(6px);animation:fp-fade-in 0.2s ease}' +
-      '#funkpay-iframe{border:none;border-radius:16px;width:380px;height:680px;' +
-      'max-width:95vw;max-height:92vh;box-shadow:0 24px 80px rgba(0,0,0,0.35);' +
-      'animation:fp-slide-up 0.25s ease}' +
-      '@keyframes fp-fade-in{from{opacity:0}to{opacity:1}}' +
-      '@keyframes fp-slide-up{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}';
-    document.head.appendChild(style);
+  function _detectTheme() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+    return 'light';
   }
 
-  function _close() {
-    if (_overlay) { _overlay.remove(); _overlay = null; }
-    window.removeEventListener('message', _onMessage);
+  function _buildSrc(opts) {
+    var params = [];
+    if (opts.amount_sat) params.push('amount='   + encodeURIComponent(opts.amount_sat));
+    if (opts.label)      params.push('label='    + encodeURIComponent(opts.label));
+    if (opts.currency)   params.push('currency=' + encodeURIComponent(opts.currency));
+    params.push('theme=' + (opts.theme || _detectTheme()));
+    return _base + '/?' + params.join('&');
+  }
+
+  function _makeIframe(src, extraStyle) {
+    var iframe = document.createElement('iframe');
+    iframe.setAttribute('allow', 'clipboard-write');
+    iframe.style.cssText = 'border:none;width:100%;' + (extraStyle || '');
+    iframe.src = src;
+    return iframe;
   }
 
   function _onMessage(e) {
@@ -52,61 +57,72 @@
     if (e.data.type === 'funkpay:expired') {
       if (_callbacks.onExpired) _callbacks.onExpired(e.data.payment);
     }
-    if (e.data.type === 'funkpay:close') {
-      _close();
-    }
+    if (e.data.type === 'funkpay:close') { _close(); }
+  }
+
+  function _close() {
+    if (_overlay) { _overlay.remove(); _overlay = null; }
+    window.removeEventListener('message', _onMessage);
   }
 
   /**
-   * Open the payment modal.
-   * @param {Object} opts
-   * @param {number}  [opts.amount_sat]  - Amount in satoshis (pre-fills the BTC field)
-   * @param {string}  [opts.label]       - Order/user label stored with the invoice
-   * @param {string}  [opts.currency]    - Default fiat currency, e.g. 'EUR' (default: 'USD')
+   * Mount the widget inline inside a container element.
+   * @param {string|Element} selector  - CSS selector or DOM element
+   * @param {Object}         opts
+   * @param {number} [opts.amount_sat]
+   * @param {string} [opts.label]
+   * @param {string} [opts.currency]   'USD'|'EUR'|'GBP'|'JPY'|'CAD'|'CHF'|'AUD'
+   * @param {string} [opts.theme]      'light'|'dark'|'auto' (default: auto-detect)
    */
-  function open(opts) {
+  function mount(selector, opts) {
     opts = opts || {};
-    _close();
-    _injectStyles();
-
-    _overlay = document.createElement('div');
-    _overlay.id = 'funkpay-overlay';
-
-    var iframe = document.createElement('iframe');
-    iframe.id = 'funkpay-iframe';
-    iframe.setAttribute('allow', 'clipboard-write');
-
-    var params = [];
-    if (opts.amount_sat) params.push('amount='    + encodeURIComponent(opts.amount_sat));
-    if (opts.label)      params.push('label='     + encodeURIComponent(opts.label));
-    if (opts.currency)   params.push('currency='  + encodeURIComponent(opts.currency));
-    iframe.src = _base + '/' + (params.length ? '?' + params.join('&') : '');
-
-    _overlay.appendChild(iframe);
-    document.body.appendChild(_overlay);
-
-    // close on backdrop click
-    _overlay.addEventListener('click', function (e) {
-      if (e.target === _overlay) _close();
-    });
-
-    // close on Escape key
-    document.addEventListener('keydown', function _esc(e) {
-      if (e.key === 'Escape') { _close(); document.removeEventListener('keydown', _esc); }
-    });
-
+    var container = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    if (!container) { console.error('FunkPay.mount: element not found:', selector); return; }
+    container.innerHTML = '';
+    var iframe = _makeIframe(_buildSrc(opts), 'height:640px;border-radius:12px;');
+    container.appendChild(iframe);
     window.addEventListener('message', _onMessage);
   }
 
   /**
-   * Register an event callback.
-   * @param {'confirmed'|'expired'|'close'} event
-   * @param {Function} cb
+   * Open as a modal overlay.
+   * @param {Object} opts  - same as mount()
    */
+  function open(opts) {
+    opts = opts || {};
+    _close();
+
+    if (!document.getElementById('funkpay-styles')) {
+      var style = document.createElement('style');
+      style.id = 'funkpay-styles';
+      style.textContent =
+        '#fp-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);' +
+        'display:flex;align-items:center;justify-content:center;z-index:2147483647;' +
+        'backdrop-filter:blur(6px);animation:fp-in 0.2s ease}' +
+        '#fp-overlay iframe{border:none;border-radius:16px;width:380px;height:680px;' +
+        'max-width:95vw;max-height:92vh;box-shadow:0 24px 80px rgba(0,0,0,0.35);' +
+        'animation:fp-up 0.25s ease}' +
+        '@keyframes fp-in{from{opacity:0}to{opacity:1}}' +
+        '@keyframes fp-up{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}';
+      document.head.appendChild(style);
+    }
+
+    _overlay = document.createElement('div');
+    _overlay.id = 'fp-overlay';
+    _overlay.appendChild(_makeIframe(_buildSrc(opts)));
+    document.body.appendChild(_overlay);
+
+    _overlay.addEventListener('click', function (e) { if (e.target === _overlay) _close(); });
+    document.addEventListener('keydown', function _esc(e) {
+      if (e.key === 'Escape') { _close(); document.removeEventListener('keydown', _esc); }
+    });
+    window.addEventListener('message', _onMessage);
+  }
+
   function on(event, cb) {
     _callbacks['on' + event.charAt(0).toUpperCase() + event.slice(1)] = cb;
   }
 
-  global.FunkPay = { open: open, close: _close, on: on };
+  global.FunkPay = { mount: mount, open: open, close: _close, on: on };
 
 })(window);
