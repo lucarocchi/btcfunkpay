@@ -75,19 +75,17 @@ DEMO_HTML = """<!DOCTYPE html>
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: transparent;
       color: var(--text);
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 24px;
+      margin: 0;
+      padding: 0;
     }
 
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-bd);
       border-radius: 12px;
-      padding: 40px;
+      padding: 32px 24px;
       width: 100%;
-      max-width: 320px;
+      box-sizing: border-box;
     }
 
     .funky-logo {
@@ -467,7 +465,8 @@ DEMO_HTML = """<!DOCTYPE html>
     } catch (_) {}
   }
   function notifyHeight() {
-    window.parent.postMessage({ type: 'funkpay:resize', height: document.body.scrollHeight }, '*');
+    var card = document.querySelector('.card');
+    if (card) window.parent.postMessage({ type: 'funkpay:resize', height: card.offsetHeight }, '*');
   }
   window.addEventListener('load', notifyHeight);
 
@@ -604,7 +603,7 @@ DEMO_HTML = """<!DOCTYPE html>
 
     const txidRow = document.getElementById('txid-row');
     if (data.txid) {
-      txidRow.textContent = 'txid: ' + data.txid;
+      txidRow.innerHTML = 'txid: <span style="cursor:pointer;text-decoration:underline;text-underline-offset:2px" title="Copy txid" onclick="navigator.clipboard.writeText(\'' + data.txid + '\').then(function(){var el=document.getElementById(\'txid-row\');var prev=el.style.color;el.style.color=\'#22c55e\';setTimeout(function(){el.style.color=prev;},800);})">' + data.txid + '</span>';
     }
 
     // hide cancel once payment is done
