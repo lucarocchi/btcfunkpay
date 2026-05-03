@@ -687,7 +687,7 @@ class InvoiceRequest(BaseModel):
 def funkpay_js():
     path = _STATIC_DIR / "funkpay.js"
     return Response(content=path.read_text(), media_type="application/javascript",
-                    headers={"Cache-Control": "public, max-age=3600"})
+                    headers={"Cache-Control": "no-store"})
 
 
 @app.get("/", response_class=HTMLResponse)
