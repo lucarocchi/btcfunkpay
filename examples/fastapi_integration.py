@@ -88,6 +88,8 @@ DEMO_HTML = """<!DOCTYPE html>
       box-sizing: border-box;
       height: 480px;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .card-header {
@@ -204,7 +206,7 @@ DEMO_HTML = """<!DOCTYPE html>
     button:disabled { background: var(--btn-dis); cursor: default; }
     #submit-btn { transition: background 0.15s, opacity 0.15s; }
 
-    #form { display: flex; flex-direction: column; }
+    #form { flex: 1; display: flex; flex-direction: column; }
 
     .pay-hint {
       margin-top: auto;
@@ -216,7 +218,7 @@ DEMO_HTML = """<!DOCTYPE html>
     .pay-hint b { color: var(--text-sub); font-weight: 600; }
 
     /* ---- invoice panel ---- */
-    #invoice { display: none; margin-top: 14px; flex-direction: column; }
+    #invoice { display: none; flex: 1; margin-top: 14px; flex-direction: column; }
 
     .divider {
       border: none;
