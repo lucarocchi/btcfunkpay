@@ -10,6 +10,8 @@ Usage:
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, Response
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from pydantic import BaseModel
 
 from btcfunkpay import PaymentProcessor, PaymentEvent, PaymentStatus, load_config
@@ -331,6 +333,20 @@ DEMO_HTML = """<!DOCTYPE html>
 <script>
   const MIN_SAT = 1000;  // configurable minimum
 
+  // read URL params passed by widget.js
+  const _params = new URLSearchParams(location.search);
+  if (_params.get('currency')) {
+    const sel = document.getElementById('currency-select');
+    if (sel) { sel.value = _params.get('currency'); updateFiatIcon(); }
+  }
+  if (_params.get('amount')) {
+    const sat = parseInt(_params.get('amount'));
+    if (sat > 0) {
+      document.getElementById('amount-btc').value = (sat / 1e8).toFixed(8);
+      // fiat fill happens after fetchPrice resolves
+    }
+  }
+
   const CURRENCY_SYMBOLS = {
     USD: '$', EUR: '€', GBP: '£', JPY: '¥', CAD: 'C$', CHF: 'Fr', AUD: 'A$',
   };
@@ -371,11 +387,20 @@ DEMO_HTML = """<!DOCTYPE html>
     overpaid:  'Payment confirmed (overpaid)',
   };
 
-  // fetch all BTC prices once on load
+  // fetch all BTC prices once on load, then fill fiat if amount param was set
   async function fetchPrice() {
     try {
       const r = await fetch('https://mempool.space/api/v1/prices');
       allPrices = await r.json();
+      const btc = parseFloat(document.getElementById('amount-btc').value);
+      if (btc > 0) {
+        const price = selectedPrice();
+        if (price) {
+          const decimals = FIAT_DECIMALS[selectedCurrency()] ?? 2;
+          document.getElementById('amount-fiat').value = (btc * price).toFixed(decimals);
+        }
+        updatePayBtn();
+      }
     } catch (_) {}
   }
   fetchPrice();
@@ -555,92 +580,7 @@ DEMO_HTML = """<!DOCTYPE html>
 </html>"""
 
 
-WIDGET_JS = r"""
-(function(global) {
-  'use strict';
-
-  // auto-detect base URL from script src
-  var _base = (function() {
-    var scripts = document.querySelectorAll('script[src]');
-    for (var i = 0; i < scripts.length; i++) {
-      var s = scripts[i].src;
-      if (s.indexOf('widget.js') !== -1) return s.replace('/widget.js', '');
-    }
-    return '';
-  })();
-
-  var _callbacks = {};
-  var _overlay = null;
-
-  function _injectStyles() {
-    if (document.getElementById('funkpay-styles')) return;
-    var style = document.createElement('style');
-    style.id = 'funkpay-styles';
-    style.textContent = [
-      '#funkpay-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);',
-      'display:flex;align-items:center;justify-content:center;z-index:2147483647;',
-      'backdrop-filter:blur(6px);animation:fp-fade-in 0.2s ease}',
-      '#funkpay-iframe{border:none;border-radius:16px;width:380px;height:680px;',
-      'max-width:95vw;max-height:92vh;box-shadow:0 24px 80px rgba(0,0,0,0.35);',
-      'animation:fp-slide-up 0.25s ease}',
-      '@keyframes fp-fade-in{from{opacity:0}to{opacity:1}}',
-      '@keyframes fp-slide-up{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}',
-    ].join('');
-    document.head.appendChild(style);
-  }
-
-  function _close() {
-    if (_overlay) { _overlay.remove(); _overlay = null; }
-    window.removeEventListener('message', _onMessage);
-  }
-
-  function _onMessage(e) {
-    if (!e.data || typeof e.data.type !== 'string') return;
-    if (e.data.type === 'funkpay:confirmed') {
-      if (_callbacks.onConfirmed) _callbacks.onConfirmed(e.data.payment);
-    }
-    if (e.data.type === 'funkpay:expired') {
-      if (_callbacks.onExpired) _callbacks.onExpired(e.data.payment);
-    }
-    if (e.data.type === 'funkpay:close') {
-      _close();
-    }
-  }
-
-  function open(opts) {
-    opts = opts || {};
-    _close();
-    _injectStyles();
-
-    _overlay = document.createElement('div');
-    _overlay.id = 'funkpay-overlay';
-
-    var iframe = document.createElement('iframe');
-    iframe.id = 'funkpay-iframe';
-    var src = _base + '/';
-    var params = [];
-    if (opts.amount_sat) params.push('amount=' + opts.amount_sat);
-    if (opts.label)      params.push('label=' + encodeURIComponent(opts.label));
-    if (params.length)   src += '?' + params.join('&');
-    iframe.src = src;
-
-    _overlay.appendChild(iframe);
-    document.body.appendChild(_overlay);
-
-    _overlay.addEventListener('click', function(e) {
-      if (e.target === _overlay) _close();
-    });
-    window.addEventListener('message', _onMessage);
-  }
-
-  global.FunkPay = {
-    open: open,
-    close: _close,
-    on: function(event, cb) { _callbacks['on' + event.charAt(0).toUpperCase() + event.slice(1)] = cb; },
-  };
-
-})(window);
-"""
+_STATIC_DIR = Path(__file__).parent.parent / "static"
 
 
 @asynccontextmanager
@@ -669,6 +609,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
 
 class InvoiceRequest(BaseModel):
@@ -678,7 +619,8 @@ class InvoiceRequest(BaseModel):
 
 @app.get("/widget.js")
 def widget_js():
-    return Response(content=WIDGET_JS, media_type="application/javascript",
+    path = _STATIC_DIR / "widget.js"
+    return Response(content=path.read_text(), media_type="application/javascript",
                     headers={"Cache-Control": "public, max-age=3600"})
 
 
