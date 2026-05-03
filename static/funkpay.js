@@ -663,7 +663,9 @@
         var s = root.getElementById('payment-success');
         s.style.display = 'block';
         root.getElementById('ok-title').textContent = 'Payment received!';
-        root.getElementById('ok-sub').style.display = 'none';
+        var okSubConfirmed = root.getElementById('ok-sub');
+        okSubConfirmed.textContent = 'Your payment has been confirmed on the Bitcoin network. Thank you for paying with Bitcoin!';
+        okSubConfirmed.style.display = 'block';
         var sat = data.received_sat || 0;
         root.getElementById('ok-amount').textContent = (sat / 1e8).toFixed(8) + ' BTC received';
         if (data.txid) {
@@ -714,7 +716,7 @@
       s.style.display = 'block';
       root.getElementById('ok-title').textContent = 'Thank you!';
       var okSub = root.getElementById('ok-sub');
-      okSub.textContent = 'Your transaction is on its way. It will confirm automatically on-chain.';
+      okSub.textContent = 'Your payment is on its way. Bitcoin transactions typically confirm within 10–60 minutes. You can close this page.';
       okSub.style.display = 'block';
       root.getElementById('ok-amount').textContent = '';
       root.getElementById('ok-txid').textContent = '';
