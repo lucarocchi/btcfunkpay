@@ -21,7 +21,7 @@ from btcfunkpay import PaymentProcessor, PaymentEvent, load_config
 
 cfg = load_config()
 
-_STATIC_DIR = Path(__file__).parent.parent / "static"
+_STATIC_DIR = Path(__file__).parent / "static"
 
 # --------------------------------------------------------------------------- #
 #  Lifespan                                                                    #
