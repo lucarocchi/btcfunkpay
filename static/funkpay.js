@@ -372,9 +372,7 @@
         </div>
 
         <div class="pay-hint">
-          Enter an amount in fiat or BTC — both fields stay in sync.<br>
-          Click <b>Pay</b> — a QR code will appear. Scan it with your Bitcoin wallet.<br>
-          Funds arrive directly on-chain. No account, no intermediary.
+          Enter fiat or BTC — fields sync automatically. Click <b>Pay</b>, scan the QR with your Bitcoin wallet, funds land on-chain. No account, no intermediary. <span style="opacity:0.65">Open source · MIT</span>
         </div>
         <button type="submit" id="submit-btn" disabled>Pay</button>
       </form>
