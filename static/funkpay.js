@@ -409,7 +409,6 @@
           <div class="ok-sub" id="ok-sub" style="display:none;font-size:12px;color:#999999;margin-bottom:12px;line-height:1.6;"></div>
           <div class="ok-amount" id="ok-amount"></div>
           <div class="ok-txid" id="ok-txid" title="Click to copy txid"></div>
-          <span id="share-btn" style="font-size:12px;color:#f7931a;cursor:pointer;margin-top:12px;display:inline-block;">Share FunkPay →</span>
         </div>
         <button id="thankyou-btn" style="background:#22c55e;margin-top:auto;">Thank you</button>
       </div>
@@ -711,25 +710,9 @@
       reset();
     });
 
-    // share button
-    root.getElementById('share-btn').addEventListener('click', function() {
-      var url = 'https://btcfunk.com/#support';
-      var text = 'I just paid with Bitcoin via FunkPay — open source, self-custodial payments. No middlemen.';
-      if (navigator.share) {
-        navigator.share({ title: 'FunkPay', text: text, url: url });
-      } else {
-        navigator.clipboard.writeText(url).then(function() {
-          var btn = root.getElementById('share-btn');
-          var prev = btn.textContent;
-          btn.textContent = 'Link copied!';
-          setTimeout(function() { btn.textContent = prev; }, 1500);
-        });
-      }
-    });
-
     // thank you button
     root.getElementById('thankyou-btn').addEventListener('click', function() {
-      reset();
+      window.location.href = '/';
     });
 
     function showThankYou() {
