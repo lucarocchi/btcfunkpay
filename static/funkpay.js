@@ -720,7 +720,7 @@
       root.getElementById('invoice').style.display = 'none';
       root.getElementById('form').style.display = 'none';
       var s = root.getElementById('payment-success');
-      s.style.display = 'block';
+      s.style.display = 'flex';
       root.getElementById('ok-title').textContent = 'Thank you!';
       var okSub = root.getElementById('ok-sub');
       okSub.textContent = 'Your payment is on its way. Bitcoin transactions typically confirm within 10–60 minutes. You can close this page.';
