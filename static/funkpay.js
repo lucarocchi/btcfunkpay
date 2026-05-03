@@ -54,6 +54,7 @@
       border-radius: 12px;
       padding: 16px 20px;
       width: 100%;
+      height: 480px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -100,9 +101,11 @@
     #payment-success {
       display: none;
       text-align: center;
-      padding: 80px 0 8px;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
-    #payment-success .check { font-size: 48px; line-height: 1; margin-bottom: 8px; }
     #payment-success .ok-title { font-size: 1.1rem; font-weight: 700; color: #22c55e; margin-bottom: 4px; }
     #payment-success .ok-amount { font-size: 0.85rem; color: #555555; margin-bottom: 8px; }
     [data-theme="dark"] #payment-success .ok-amount { color: #aaaaaa; }
@@ -403,7 +406,6 @@
       </div>
 
       <div id="payment-success">
-        <div class="check">✓</div>
         <div class="ok-title" id="ok-title">Payment received!</div>
         <div class="ok-sub" id="ok-sub" style="display:none;font-size:12px;color:#999999;margin-bottom:8px;line-height:1.5;text-align:center;"></div>
         <div class="ok-amount" id="ok-amount"></div>
