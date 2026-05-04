@@ -357,7 +357,7 @@
           <label class="input-label" for="amount-fiat">Amount</label>
           <div class="field-wrap">
             <span class="field-icon usd" id="fiat-icon">$</span>
-            <input id="amount-fiat" type="number" placeholder="0.00" min="0">
+            <input id="amount-fiat" type="text" inputmode="decimal" placeholder="0.00" pattern="[0-9]*\.?[0-9]*">
           </div>
         </div>
 
@@ -531,6 +531,7 @@
     });
 
     // fiat → BTC
+    root.getElementById('amount-fiat').addEventListener('wheel', function(e) { e.preventDefault(); }, { passive: false });
     root.getElementById('amount-fiat').addEventListener('input', function() {
       if (updatingFrom === 'btc') return;
       updatingFrom = 'fiat';
