@@ -163,7 +163,7 @@ uvicorn server:app --port 8001
 
 ## Embed on your website
 
-> **The widget alone is not enough.** `funkpay.js` is a UI — it needs a backend to derive Bitcoin addresses, monitor the blockchain, and fire payment callbacks. You must run your own backend (see [INTEGRATION.md](INTEGRATION.md)) and set `data-server` to point to it. Without `data-server` the widget will not render.
+> **The widget alone is not enough.** `funkpay.js` is a UI — it needs a backend to derive Bitcoin addresses, monitor the blockchain, and fire payment callbacks. You must run your own backend (see [INTEGRATION.md](INTEGRATION.md)) and set `data-server` to point to it. Without `data-server` the widget displays a configuration error.
 
 ```html
 <!-- 1. Place the div -->

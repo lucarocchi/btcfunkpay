@@ -93,7 +93,7 @@ Callbacks registered before or after the script loads both work — no postMessa
 | `data-amount` | — | Pre-fill amount in satoshis (always satoshis, regardless of `data-currency`) |
 | `data-label` | — | Order or user identifier stored with the invoice |
 | `data-theme` | `auto` | Color theme: `light`, `dark`, or `auto` (follows system `prefers-color-scheme`) |
-| `data-server` | **Required** | Base URL of your self-hosted backend (e.g. `https://pay.example.com`). Without this the widget will not render. |
+| `data-server` | **Required** | Base URL of your self-hosted backend (e.g. `https://pay.example.com`). Without this the widget displays a configuration error. |
 
 **Events:**
 
