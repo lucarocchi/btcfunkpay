@@ -31,6 +31,8 @@ Never ship an irreversible good before `confirmed`. For everything else, the mem
 
 This isn't a workaround — it's the same logic behind every contactless payment terminal in the world. The merchant accepts a calculated risk because the friction of waiting costs more than the fraud it prevents.
 
+**Live demo → [btcfunk.com/#support](https://btcfunk.com/#support)**
+
 ---
 
 ## Overview
@@ -46,8 +48,6 @@ It also ships an **embeddable JS widget** — drop one `<script>` tag on any pag
   FunkPay.on('confirmed', (payment) => activateSubscription(payment.label));
 </script>
 ```
-
-**Live demo → [btcfunk.com/#support](https://btcfunk.com/#support)**
 
 > **Note:** the widget includes an "I've paid" button that the user can click at any time, even without sending any amount. It only shows a thank-you screen on the user's side — if no transaction arrives on-chain, no success callback or webhook call will ever be triggered.
 
@@ -187,6 +187,7 @@ uvicorn server:app --port 8001
 | `data-amount` | Pre-fill amount in satoshis (always satoshis, regardless of `data-currency`) |
 | `data-label` | Order / user identifier |
 | `data-theme` | `light` \| `dark` \| `auto` (default: auto-detect) |
+| `data-server` | Base URL of your self-hosted backend (e.g. `https://pay.mysite.com`). If omitted, uses `btcfunk.com/pay`. |
 
 ---
 
