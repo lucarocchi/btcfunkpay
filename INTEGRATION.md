@@ -37,21 +37,21 @@ Want a modal/popup? Style the div yourself with `position:fixed` — FunkPay doe
 
 ## Embedding funkpay.js
 
-### Minimal — two lines
+### Minimal
 
 ```html
-<div id="funkpay"></div>
+<div id="funkpay" data-server="https://pay.example.com"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 ```
 
-That's it. The script finds `#funkpay` automatically and renders the payment widget inside it.
+`data-server` is required — without it the widget will not render. Replace `https://pay.example.com` with the base URL of your running btcfunkpay backend.
 
 ### With options (data attributes)
 
 ```html
 <div id="funkpay"
+     data-server="https://pay.example.com"
      data-currency="EUR"
-     data-amount="50000"
      data-label="user-42"
      data-theme="auto">
 </div>
@@ -61,7 +61,7 @@ That's it. The script finds `#funkpay` automatically and renders the payment wid
 ### With payment callbacks
 
 ```html
-<div id="funkpay" data-currency="EUR"></div>
+<div id="funkpay" data-server="https://pay.example.com" data-currency="EUR"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
   FunkPay.on('confirmed', function(payment) {
@@ -97,7 +97,7 @@ FunkPay doesn't build the overlay — you do. Position the div however you want:
 </style>
 
 <div id="funkpay-wrap">
-  <div id="funkpay" data-currency="EUR"></div>
+  <div id="funkpay" data-server="https://pay.example.com" data-currency="EUR"></div>
 </div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
@@ -180,6 +180,34 @@ Response:
   "txid": "abc123..."
 }
 ```
+
+### List invoices
+
+```
+GET /invoices
+GET /invoices?status=confirmed
+GET /invoices?limit=50&offset=0
+```
+
+Response:
+```json
+[
+  {
+    "payment_id": "7509006e-...",
+    "address": "bc1q...",
+    "label": "user-42",
+    "amount_sat": 50000,
+    "status": "confirmed",
+    "received_sat": 50000,
+    "confirmations": 1,
+    "txid": "abc123...",
+    "created_at": "2026-05-03T10:00:00+00:00",
+    "confirmed_at": "2026-05-03T10:05:00+00:00"
+  }
+]
+```
+
+`status` filter is optional. `limit` defaults to 100, max 500.
 
 **Status values:**
 

@@ -42,7 +42,7 @@ FunkPay is a Python library for accepting Bitcoin on-chain payments. It derives 
 It also ships an **embeddable JS widget** — drop one `<script>` tag on any page and a payment widget appears inline.
 
 ```html
-<div id="funkpay" data-currency="EUR" data-label="user-42"></div>
+<div id="funkpay" data-server="https://pay.example.com" data-currency="EUR" data-label="user-42"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
   FunkPay.on('confirmed', (payment) => activateSubscription(payment.label));
@@ -185,11 +185,13 @@ uvicorn server:app --port 8001
 
 | Attribute | Description |
 |-----------|-------------|
-| `data-server` | **Required.** Base URL of your self-hosted backend (e.g. `https://pay.mysite.com`). |
+| `data-server` | **Required.** Base URL of your self-hosted backend (e.g. `https://pay.example.com`). Without this the widget will not render. |
 | `data-currency` | Fiat currency: `USD` `EUR` `GBP` `JPY` `CAD` `CHF` `AUD` |
 | `data-amount` | Pre-fill amount in satoshis (always satoshis, regardless of `data-currency`) |
 | `data-label` | Order / user identifier |
 | `data-theme` | `light` \| `dark` \| `auto` (default: auto-detect) |
+
+> **CORS:** the widget runs on your domain and calls your backend — your server must allow cross-origin requests. CORS is enabled by default (`allowed_origins = *`). To restrict it, set `allowed_origins` in `btcfunkpay.conf` or via `BTCFUNKPAY_ALLOWED_ORIGINS`.
 
 ---
 
