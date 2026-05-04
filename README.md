@@ -167,7 +167,7 @@ uvicorn server:app --port 8001
 
 ```html
 <!-- 1. Place the div -->
-<div id="funkpay" data-server="https://your-server-here" data-currency="EUR"></div>
+<div id="funkpay" data-server="https://pay.example.com" data-currency="EUR"></div>
 
 <!-- 2. Load the widget — auto-mounts into the div above -->
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
