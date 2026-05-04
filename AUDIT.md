@@ -1,7 +1,7 @@
 # BTCFunkPay — Security & Quality Audit
 
 **Data audit originale:** 2026-05-03  
-**Ultimo aggiornamento:** 2026-05-04  
+**Ultimo aggiornamento:** 2026-05-04 (tutti i finding chiusi)  
 **Revisore:** Claude Sonnet 4.6 (audit commissionato da Luca Rocchi)  
 **Scope:** tutti i file del progetto — `server.py`, `btcfunkpay/`, `static/funkpay.js`, `examples/`, `btcfunkpay.conf.example`, `pyproject.toml`, `README.md`, `INTEGRATION.md`
 
@@ -11,9 +11,9 @@
 
 | Stato | # | Finding |
 |-------|---|---------|
-| ✅ Risolto | 20 | F1 F2 F3 F4 F5 F6 F8 F10 F11 F12 F13 F14 F17 F18 F20 F21 F22 F24 F25 + F6 (coperto da F1) |
+| ✅ Risolto | 22 | F1 F2 F3 F4 F5 F6 F8 F9 F10 F11 F12 F13 F14 F15 F16 F17 F18 F20 F21 F22 F24 F25 |
 | ⚠️ Rischio accettato | 3 | F7 F19 F23 |
-| 🔲 Aperto | 3 | F9 F15 F16 |
+| 🔲 Aperto | 0 | — |
 
 ---
 
@@ -29,14 +29,14 @@
 | 6 | **CRITICO** | API design / Info leak | `server.py:156–180` | `GET /invoices` espone l'intero database senza auth | ✅ Risolto (via F1) |
 | 7 | **CRITICO** | Bitcoin / RBF | `btcfunkpay/_monitor.py` | Replace-By-Fee (RBF) ignorato completamente | ⚠️ Rischio accettato |
 | 8 | **CRITICO** | Sicurezza / SSRF | `server.py:65` | `webhook_url` non validata: SSRF possibile | ✅ Risolto |
-| 9 | **GRAVE** | Affidabilità / Race condition | `btcfunkpay/_db.py:78–119` | `get_next_index` e `create_payment` non sono atomici | 🔲 Aperto |
+| 9 | **GRAVE** | Affidabilità / Race condition | `btcfunkpay/_db.py:78–119` | `get_next_index` e `create_payment` non sono atomici | ✅ Risolto |
 | 10 | **GRAVE** | Input validation | `server.py:137–145` | Nessuna validazione su `amount_sat` e `label` | ✅ Risolto |
 | 11 | **GRAVE** | Input validation | `server.py:159–164` | `status` filter non validato, offset negativo consentito | ✅ Risolto |
 | 12 | **GRAVE** | Sicurezza / Credentials | `btcfunkpay/_rpc.py:17` | RPC URL con credenziali in chiaro in memoria/log | ✅ Risolto |
 | 13 | **GRAVE** | JavaScript / XSS | `static/funkpay.js:652, 688` | Dati server riflessi in CSS class e DOM senza escape | ✅ Risolto |
 | 14 | **GRAVE** | JavaScript / Redirect | `static/funkpay.js:747` | `window.location.href = '/'` hardcoded e non configurabile | ✅ Risolto |
-| 15 | **MEDIO** | Bitcoin / xpub exposure | `server.py` / `btcfunkpay/_db.py` | `xpub_index` esposto indirettamente, xpub in log setup | 🔲 Aperto |
-| 16 | **MEDIO** | Deployment / Rate limiting | `server.py` | Nessun rate limiting su nessun endpoint | 🔲 Aperto |
+| 15 | **MEDIO** | Bitcoin / xpub exposure | `server.py` / `btcfunkpay/_db.py` | `xpub_index` esposto indirettamente, xpub in log setup | ✅ Risolto |
+| 16 | **MEDIO** | Deployment / Rate limiting | `server.py` | Nessun rate limiting su nessun endpoint | ✅ Risolto |
 | 17 | **MEDIO** | Affidabilità / Asyncio | `btcfunkpay/_monitor.py:76,82,86,89,191` | `get_event_loop()` deprecato in Python 3.10+ | ✅ Risolto |
 | 18 | **MEDIO** | Deployment / Logging | `server.py:49–51` | Label utente (email, order ID) loggate in chiaro | ✅ Risolto |
 | 19 | **MEDIO** | Bitcoin / Reorg | `btcfunkpay/_monitor.py:97–109` | Reorg handling: solo status CONFIRMED/OVERPAID gestito | ⚠️ Rischio accettato |
@@ -285,18 +285,28 @@ def _safe_webhook_url(url: str) -> bool:
 
 **File:** `btcfunkpay/_db.py`, righe 78–119  
 **Severità:** GRAVE  
-**Stato:** 🔲 Aperto
+**Stato:** ✅ Risolto — commit `a808788` (2026-05-04)
 
 **Descrizione tecnica:**  
-`get_next_index` usa `BEGIN IMMEDIATE` per garantire atomicità dell'incremento dell'indice. Tuttavia `create_payment` viene chiamato dopo, in un'operazione separata, senza lock sulla transazione precedente. Con più worker uvicorn (`--workers N`), ogni worker ha la propria connessione SQLite: `BEGIN IMMEDIATE` su una connessione non blocca un'altra connessione che esegue `create_payment` con lo stesso index.
+`get_next_index` usava `BEGIN IMMEDIATE` per garantire atomicità dell'incremento dell'indice. Tuttavia `create_payment` veniva chiamato dopo, in un'operazione separata, senza lock sulla transazione precedente. Con più worker uvicorn (`--workers N`), ogni worker ha la propria connessione SQLite: il lock della prima transazione non proteggeva la seconda.
 
 **Impatto reale:**  
-Due invoices generate quasi simultaneamente potrebbero ricevere lo stesso `xpub_index` → stesso indirizzo Bitcoin → ambiguità su quale cliente ha pagato. Address reuse degrada la privacy.
+Due invoices generate quasi simultaneamente potevano ricevere lo stesso `xpub_index` → stesso indirizzo Bitcoin → ambiguità su quale cliente ha pagato. Address reuse degrada la privacy.
 
-**Impatto attuale:** basso — il server gira con un singolo worker. Il GIL Python protegge il caso single-process.
+**Fix applicato:**  
+Fusi `get_next_index` e `create_payment` nel nuovo metodo `allocate_and_create_payment` che esegue tutto in un unico `BEGIN IMMEDIATE ... COMMIT`. `derive_address` (pura computazione CPU, nessun I/O) viene chiamata dentro la transazione — sicuro e veloce (microsecondi). Un singolo write lock a livello file SQLite impedisce a qualsiasi worker di ottenere lo stesso indice.
 
-**Fix raccomandato:**  
-Rendere l'intera operazione index-increment + INSERT atomica in un'unica transazione `BEGIN IMMEDIATE ... COMMIT`, eliminando `get_next_index` come metodo separato.
+```python
+def allocate_and_create_payment(self, xpub, derive_address, ...) -> Invoice:
+    with self._lock:
+        self._conn.execute("BEGIN IMMEDIATE")
+        # get/increment index
+        idx = ...
+        # pure CPU — safe inside transaction
+        address = derive_address(idx)
+        self._conn.execute("INSERT INTO payments ...", ...)
+        self._conn.execute("COMMIT")
+```
 
 ---
 
@@ -415,13 +425,19 @@ if (/^https?:\/\//.test(dest) || dest.startsWith('/')) {
 
 **File:** `btcfunkpay/_db.py:19`, `btcfunkpay/processor.py:70–71`  
 **Severità:** MEDIO  
-**Stato:** 🔲 Aperto
+**Stato:** ✅ Risolto — commit `70a4463` (2026-05-04)
 
 Durante il setup del wallet, il descrittore BIP84 che include la xpub completa viene costruito come stringa e passato a `importdescriptors`. Se il logging di `requests` o `urllib3` è in livello DEBUG, la richiesta RPC completa — che contiene la xpub — compare nei log.
 
 La xpub non è una chiave privata ma permette di derivare tutti gli indirizzi futuri e passati, abilitando chain analysis completa del wallet.
 
-**Fix raccomandato:** assicurarsi che `logging.getLogger("urllib3").setLevel(logging.WARNING)` in produzione. Non loggare il descrittore completo contenente la xpub.
+**Fix applicato:**  
+Aggiunto in `server.py` all'avvio, prima di qualsiasi operazione RPC:
+```python
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
+```
+Questo impedisce a `urllib3` di loggare i body delle richieste HTTP a qualsiasi livello di verbosità del logger radice.
 
 ---
 
@@ -429,25 +445,23 @@ La xpub non è una chiave privata ma permette di derivare tutti gli indirizzi fu
 
 **File:** `server.py`  
 **Severità:** MEDIO  
-**Stato:** 🔲 Aperto
+**Stato:** ✅ Risolto — commit `1c517da` (2026-05-04)
 
-Nessun rate limiting su nessun endpoint. `POST /invoices` è pubblicamente accessibile e crea un record SQLite, incrementa `next_index`, e fa una chiamata Bitcoin Core RPC per ogni richiesta. Un attaccante può:
+Nessun rate limiting su nessun endpoint. `POST /invoices` era pubblicamente accessibile e creava un record SQLite, incrementava `next_index`, e faceva una chiamata Bitcoin Core RPC per ogni richiesta. Un attaccante poteva:
 - Esaurire lo spazio disco con invoices spazzatura.
 - Consumare tutti i 1000 indirizzi del descriptor range, rendendo il wallet cieco a nuovi pagamenti.
 - Sovraccaricare Bitcoin Core RPC.
 
-**Fix raccomandato:**  
-Aggiungere `slowapi` (già usato in btcfunk):
+**Fix applicato:**  
+Aggiunto `slowapi` con limite 20 richieste/minuto per IP su `POST /invoices`. Il limite è per IP client — ogni utente ha il suo contatore indipendente, un bot non blocca gli utenti legittimi.
 ```python
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
+_limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = _limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.post("/invoices")
-@limiter.limit("10/minute")
-def create_invoice(request: Request, req: InvoiceRequest): ...
+@_limiter.limit("20/minute")
+def create_invoice(req: InvoiceRequest, request: Request): ...
 ```
 
 ---
@@ -621,7 +635,4 @@ Il progetto ha un design concettualmente corretto (nessuna custodia di chiavi pr
 
 I tre finding BLOCCANTI originali (auth assente, CDN senza SRI, CORS ignorato) sono tutti risolti. I due finding CRITICI Bitcoin (floating point sat, callback confirmed su detected) sono risolti. Il progetto è ora deployabile in produzione per il caso d'uso attuale (donazioni, pagamenti singoli non ad alto volume).
 
-**Tre voci aperte** diventano prioritarie se il volume cresce o si passa a deployment multi-worker:
-- **F9** Race condition `get_next_index` → basso rischio con singolo worker, alto rischio con `--workers N`
-- **F15** xpub nei log di debug → fix immediato: impostare `urllib3` a WARNING in produzione
-- **F16** No rate limiting su `POST /invoices` → da aggiungere `slowapi` prima di esporre pubblicamente
+Tutti i finding sono stati risolti o analizzati con rischio formalmente accettato. I tre finding con rischio accettato (F7 RBF, F19 reorg, F23 RPC creds) rimangono documentati con la motivazione della decisione e le condizioni che renderebbero necessaria una rivalutazione.
