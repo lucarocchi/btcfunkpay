@@ -153,6 +153,33 @@ def create_invoice(req: InvoiceRequest, request: Request):
     }
 
 
+@app.get("/invoices")
+def list_invoices(
+    request: Request,
+    status: str | None = None,
+    limit: int = 100,
+    offset: int = 0,
+):
+    invoices = request.app.state.proc.list_invoices(
+        status=status, limit=min(limit, 500), offset=offset
+    )
+    return [
+        {
+            "payment_id":    inv.payment_id,
+            "address":       inv.address,
+            "label":         inv.label,
+            "amount_sat":    inv.amount_sat,
+            "status":        inv.status.value,
+            "received_sat":  inv.received_sat,
+            "confirmations": inv.confirmations,
+            "txid":          inv.txid,
+            "created_at":    inv.created_at.isoformat() if inv.created_at else None,
+            "confirmed_at":  inv.confirmed_at.isoformat() if inv.confirmed_at else None,
+        }
+        for inv in invoices
+    ]
+
+
 @app.get("/invoices/{payment_id}")
 def get_invoice(payment_id: str, request: Request):
     inv = request.app.state.proc.get_invoice(payment_id)

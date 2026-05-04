@@ -121,6 +121,14 @@ class PaymentProcessor:
     def get_invoice(self, payment_id: str) -> Optional[Invoice]:
         return self._store.get_payment(payment_id)
 
+    def list_invoices(
+        self,
+        status: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ):
+        return self._store.list_payments(status=status, limit=limit, offset=offset)
+
     def start(self) -> None:
         """Start the monitoring loop in a background daemon thread."""
         if self._thread and self._thread.is_alive():

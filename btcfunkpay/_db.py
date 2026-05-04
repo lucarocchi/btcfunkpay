@@ -140,6 +140,25 @@ class PaymentStore:
                 f"UPDATE payments SET {set_clause} WHERE id = ?", values
             )
 
+    def list_payments(
+        self,
+        status: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[Invoice]:
+        if status:
+            rows = self._conn.execute(
+                "SELECT * FROM payments WHERE status = ? "
+                "ORDER BY created_at DESC LIMIT ? OFFSET ?",
+                (status, limit, offset),
+            ).fetchall()
+        else:
+            rows = self._conn.execute(
+                "SELECT * FROM payments ORDER BY created_at DESC LIMIT ? OFFSET ?",
+                (limit, offset),
+            ).fetchall()
+        return [_row_to_invoice(r) for r in rows]
+
     def list_pending(self) -> list[Invoice]:
         rows = self._conn.execute(
             "SELECT * FROM payments WHERE status IN ('pending', 'detected')"
