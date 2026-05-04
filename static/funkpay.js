@@ -15,8 +15,9 @@
  *
  * Listen for payment events (optional):
  *   <script>
- *     FunkPay.on('confirmed', function(p) { console.log('paid!', p); });
- *     FunkPay.on('expired',   function(p) { console.log('expired', p); });
+ *     FunkPay.on('detected',  function(p) { console.log('in mempool', p); });  // 0-conf
+ *     FunkPay.on('confirmed', function(p) { console.log('confirmed!', p); });  // on-chain
+ *     FunkPay.on('expired',   function(p) { console.log('expired',   p); });
  *   </script>
  */
 (function (global) {
@@ -674,16 +675,41 @@
         txidRow.appendChild(txidSpan);
       }
 
-      if (['detected', 'confirmed', 'overpaid'].includes(data.status)) {
-        clearInterval(pollTimer);
+      if (data.status === 'detected') {
         root.getElementById('invoice').style.display = 'none';
         root.getElementById('form').style.display = 'none';
         var s = root.getElementById('payment-success');
         s.style.display = 'flex';
-        root.getElementById('ok-title').textContent = 'Payment received!';
-        var okSubConfirmed = root.getElementById('ok-sub');
-        okSubConfirmed.textContent = 'Your payment has been confirmed on the Bitcoin network. Thank you for paying with Bitcoin!';
-        okSubConfirmed.style.display = 'block';
+        root.getElementById('ok-title').textContent = 'Payment detected!';
+        var okSub = root.getElementById('ok-sub');
+        okSub.textContent = 'Transaction seen in mempool. Waiting for on-chain confirmation — this usually takes 10–60 minutes.';
+        okSub.style.display = 'block';
+        var sat = data.received_sat || 0;
+        root.getElementById('ok-amount').textContent = (sat / 1e8).toFixed(8) + ' BTC pending';
+        if (data.txid) {
+          var okTxid = root.getElementById('ok-txid');
+          okTxid.textContent = 'txid: ' + data.txid;
+          okTxid.onclick = (function(t) {
+            return function() {
+              navigator.clipboard.writeText(t).then(function() {
+                okTxid.style.color = '#22c55e';
+                setTimeout(function() { okTxid.style.color = ''; }, 800);
+              });
+            };
+          })(data.txid);
+        }
+        if (_callbacks.detected) _callbacks.detected(data);
+      }
+
+      if (['confirmed', 'overpaid'].includes(data.status)) {
+        root.getElementById('invoice').style.display = 'none';
+        root.getElementById('form').style.display = 'none';
+        var s = root.getElementById('payment-success');
+        s.style.display = 'flex';
+        root.getElementById('ok-title').textContent = 'Payment confirmed!';
+        var okSub = root.getElementById('ok-sub');
+        okSub.textContent = 'Your payment has been confirmed on the Bitcoin network. Thank you for paying with Bitcoin!';
+        okSub.style.display = 'block';
         var sat = data.received_sat || 0;
         root.getElementById('ok-amount').textContent = (sat / 1e8).toFixed(8) + ' BTC received';
         if (data.txid) {
@@ -698,7 +724,6 @@
             };
           })(data.txid);
         }
-
         if (_callbacks.confirmed) _callbacks.confirmed(data);
       }
 
