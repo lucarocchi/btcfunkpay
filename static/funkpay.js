@@ -110,7 +110,7 @@
     #payment-success .ok-txid { font-size: 10px; font-family: monospace; color: #999999; word-break: break-all; cursor: pointer; }
     [data-theme="dark"] #payment-success .ok-txid { color: #666666; }
 
-    .input-group { margin-bottom: 10px; }
+    .input-group { margin-bottom: 8px; }
 
     .input-label {
       display: block;
@@ -201,7 +201,7 @@
     #form { flex: 1; display: flex; flex-direction: column; }
 
     .pay-hint {
-      margin-top: 14px;
+      margin-top: 8px;
       margin-bottom: 0;
       font-size: 12px;
       color: #888888;
