@@ -66,7 +66,10 @@ def _b58decode_check(s: str) -> bytes:
     alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
     n = 0
     for c in s:
-        n = n * 58 + alphabet.index(c)
+        idx = alphabet.find(c)
+        if idx < 0:
+            raise ValueError(f"Invalid Base58 character: {c!r}")
+        n = n * 58 + idx
     nbytes = (n.bit_length() + 7) // 8 or 1
     raw = n.to_bytes(nbytes, "big")
     # Leading '1' chars in base58 encode leading zero bytes

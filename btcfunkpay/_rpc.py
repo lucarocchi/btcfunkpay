@@ -12,9 +12,23 @@ class RPCError(Exception):
         self.message = message
 
 
+def _redact_url(url: str) -> str:
+    """Strip user:password from RPC URL so credentials never appear in tracebacks."""
+    try:
+        from urllib.parse import urlparse, urlunparse
+        p = urlparse(url)
+        if p.username or p.password:
+            netloc = p.hostname + (f":{p.port}" if p.port else "")
+            p = p._replace(netloc=netloc)
+        return urlunparse(p)
+    except Exception:
+        return "<rpc-url>"
+
+
 class BitcoinRPC:
     def __init__(self, url: str, timeout: int = 30):
         self._url = url
+        self._safe_url = _redact_url(url)
         self._timeout = timeout
         self._session = requests.Session()
         self._session.headers.update({
@@ -29,7 +43,10 @@ class BitcoinRPC:
             "method": method,
             "params": list(params),
         }
-        r = self._session.post(self._url, json=payload, timeout=self._timeout)
+        try:
+            r = self._session.post(self._url, json=payload, timeout=self._timeout)
+        except Exception as exc:
+            raise type(exc)(str(exc).replace(self._url, self._safe_url)) from None
         # Bitcoin Core returns HTTP 500 for RPC errors but always includes JSON.
         # Parse the JSON first so we can raise RPCError with the actual code/message.
         try:

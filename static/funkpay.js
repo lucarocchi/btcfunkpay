@@ -7,10 +7,11 @@
  *   <script src="https://btcfunk.com/pay/funkpay.js"></script>
  *
  * Optional data attributes on the div:
- *   data-currency   USD | EUR | GBP | JPY | CAD | CHF | AUD
- *   data-amount     amount in satoshis (pre-fills the field)
- *   data-label      order / user identifier
- *   data-theme      light | dark | auto (default: auto)
+ *   data-currency     USD | EUR | GBP | JPY | CAD | CHF | AUD
+ *   data-amount       amount in satoshis (pre-fills the field)
+ *   data-label        order / user identifier
+ *   data-theme        light | dark | auto (default: auto)
+ *   data-success-url  URL to navigate to after payment (default: /)
  *
  * Listen for payment events (optional):
  *   <script>
@@ -444,7 +445,7 @@
   function _loadQR(cb) {
     if (window.QRCode) { cb(); return; }
     var s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+    s.src = _base + '/static/qrcode.min.js';
     s.onload = cb;
     document.head.appendChild(s);
   }
@@ -647,9 +648,11 @@
       } catch (_) {}
     }
 
+    var _VALID_STATUSES = {pending:1, detected:1, confirmed:1, expired:1, overpaid:1};
     function updateStatus(data) {
       var row = root.getElementById('status-row');
-      row.className = 'status-row status-' + data.status;
+      var safeStatus = _VALID_STATUSES[data.status] ? data.status : 'pending';
+      row.className = 'status-row status-' + safeStatus;
       root.getElementById('status-text').textContent =
         STATUS_LABELS[data.status] || data.status;
 
@@ -725,7 +728,12 @@
 
     // thank you button
     root.getElementById('thankyou-btn').addEventListener('click', function() {
-      window.location.href = '/';
+      var dest = opts.successUrl || '/';
+      if (/^https?:\/\//.test(dest) || dest.startsWith('/')) {
+        window.location.href = dest;
+      } else {
+        window.location.href = '/';
+      }
     });
 
     function showThankYou() {
@@ -777,11 +785,12 @@
       return;
     }
     _mount(el, {
-      currency: el.getAttribute('data-currency') || '',
-      theme:    el.getAttribute('data-theme')    || 'auto',
-      label:    el.getAttribute('data-label')    || '',
-      amount:   el.getAttribute('data-amount')   || '',
-      server:   server,
+      currency:   el.getAttribute('data-currency')    || '',
+      theme:      el.getAttribute('data-theme')       || 'auto',
+      label:      el.getAttribute('data-label')       || '',
+      amount:     el.getAttribute('data-amount')      || '',
+      server:     server,
+      successUrl: el.getAttribute('data-success-url') || '/',
     });
   }
 

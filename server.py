@@ -12,11 +12,11 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from btcfunkpay import PaymentProcessor, PaymentEvent, load_config
 
@@ -64,8 +64,7 @@ async def lifespan(app: FastAPI):
         logger = logging.getLogger("btcfunkpay")
         status = event.status.value if hasattr(event.status, "value") else str(event.status)
         logger.info(
-            f"payment {event.payment_id}: {status} "
-            f"— {event.received_sat} sat label={event.label}"
+            f"payment {event.payment_id}: {status} — {event.received_sat} sat"
         )
         if cfg.webhook_url and _safe_webhook_url(cfg.webhook_url) and (event.is_first_detection or event.is_first_confirmation):
             payload = {
@@ -95,11 +94,12 @@ async def lifespan(app: FastAPI):
 #  App                                                                         #
 # --------------------------------------------------------------------------- #
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
+_origins = [o.strip() for o in cfg.allowed_origins.split(",") if o.strip()] or ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_origins,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
@@ -152,8 +152,8 @@ async def prices(request: Request):
 
 
 class InvoiceRequest(BaseModel):
-    amount_sat: int | None = None
-    label: str | None = None
+    amount_sat: int | None = Field(None, ge=1000, le=2_100_000_000_000_000)
+    label: str | None = Field(None, max_length=256)
 
 
 @app.post("/invoices")
@@ -170,15 +170,17 @@ def create_invoice(req: InvoiceRequest, request: Request):
     }
 
 
+_STATUS_PATTERN = "^(pending|detected|confirmed|expired|overpaid)$"
+
 @app.get("/invoices")
 def list_invoices(
     request: Request,
-    status: str | None = None,
-    limit: int = 100,
-    offset: int = 0,
+    status: str | None = Query(None, pattern=_STATUS_PATTERN),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
 ):
     invoices = request.app.state.proc.list_invoices(
-        status=status, limit=min(limit, 500), offset=offset
+        status=status, limit=limit, offset=offset
     )
     return [
         {

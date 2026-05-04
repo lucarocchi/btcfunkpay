@@ -74,20 +74,20 @@ class Monitor:
 
     async def _poll_once(self, last_hash: str) -> str:
         try:
-            result = await asyncio.get_event_loop().run_in_executor(
+            result = await asyncio.get_running_loop().run_in_executor(
                 None, lambda: self._rpc.listsinceblock(last_hash, 0)
             )
         except RPCError as e:
             if e.code in (-5, -8):
                 log.warning("last_block_hash invalid (reorg/pruned?), falling back")
-                height = await asyncio.get_event_loop().run_in_executor(
+                height = await asyncio.get_running_loop().run_in_executor(
                     None, self._rpc.getblockcount
                 )
                 fallback_height = max(0, height - 144)
-                fallback_hash = await asyncio.get_event_loop().run_in_executor(
+                fallback_hash = await asyncio.get_running_loop().run_in_executor(
                     None, lambda: self._rpc.getblockhash(fallback_height)
                 )
-                result = await asyncio.get_event_loop().run_in_executor(
+                result = await asyncio.get_running_loop().run_in_executor(
                     None, lambda: self._rpc.listsinceblock(fallback_hash, 0)
                 )
             else:
@@ -195,7 +195,7 @@ class Monitor:
                 if asyncio.iscoroutinefunction(cb):
                     await cb(event)
                 else:
-                    await asyncio.get_event_loop().run_in_executor(None, cb, event)
+                    await asyncio.get_running_loop().run_in_executor(None, cb, event)
             except Exception:
                 log.exception("Exception in payment callback %s", cb)
 
