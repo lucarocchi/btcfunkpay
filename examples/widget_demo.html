@@ -29,12 +29,22 @@
 
   <h1>FunkPay Widget Demo</h1>
 
-  <div id="funkpay" data-currency="EUR" data-theme="auto"></div>
+  <div id="funkpay"
+       data-server="https://your-server.com/pay"
+       data-currency="EUR"
+       data-theme="auto"
+       data-success-url="/thank-you"></div>
 
   <script src="https://btcfunk.com/pay/funkpay.js"></script>
   <script>
+    FunkPay.on('detected', function(payment) {
+      console.log('Payment detected in mempool (0-conf):', payment);
+    });
     FunkPay.on('confirmed', function(payment) {
-      console.log('Payment confirmed!', payment);
+      console.log('Payment confirmed on-chain:', payment);
+    });
+    FunkPay.on('expired', function(payment) {
+      console.log('Invoice expired:', payment);
     });
   </script>
 
