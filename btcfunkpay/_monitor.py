@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from datetime import datetime, timezone
+from decimal import Decimal, ROUND_DOWN
 from typing import Callable
 
 from ._db import PaymentStore
@@ -114,7 +115,13 @@ class Monitor:
             addr = tx.get("address")
             if addr not in watched:
                 continue
-            amount_sat = round(tx["amount"] * 1e8)
+            raw = tx.get("amount")
+            if raw is None:
+                log.warning("tx %s: amount mancante, skip", tx.get("txid"))
+                continue
+            amount_sat = int(
+                (Decimal(str(raw)) * Decimal("1e8")).to_integral_value(rounding=ROUND_DOWN)
+            )
             confs = max(0, tx.get("confirmations", 0))
             txid = tx.get("txid")
             await self._process_tx(watched[addr], addr, txid, amount_sat, confs)

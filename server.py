@@ -9,6 +9,7 @@ Usage:
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
@@ -22,6 +23,22 @@ from btcfunkpay import PaymentProcessor, PaymentEvent, load_config
 cfg = load_config()
 
 _STATIC_DIR = Path(__file__).parent / "static"
+
+_BLOCKED_HOSTS = {"localhost", "127.0.0.1", "::1", "0.0.0.0"}
+
+def _safe_webhook_url(url: str) -> bool:
+    try:
+        p = urlparse(url)
+        if p.scheme not in ("http", "https"):
+            return False
+        host = p.hostname or ""
+        if host in _BLOCKED_HOSTS:
+            return False
+        if host.startswith("169.254.") or host.startswith("10.") or host.startswith("192.168."):
+            return False
+        return True
+    except Exception:
+        return False
 
 # --------------------------------------------------------------------------- #
 #  Lifespan                                                                    #
@@ -50,7 +67,7 @@ async def lifespan(app: FastAPI):
             f"payment {event.payment_id}: {status} "
             f"— {event.received_sat} sat label={event.label}"
         )
-        if cfg.webhook_url and (event.is_first_detection or event.is_first_confirmation):
+        if cfg.webhook_url and _safe_webhook_url(cfg.webhook_url) and (event.is_first_detection or event.is_first_confirmation):
             payload = {
                 "payment_id":    event.payment_id,
                 "label":         event.label,

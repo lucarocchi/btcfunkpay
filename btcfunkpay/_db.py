@@ -129,9 +129,16 @@ class PaymentStore:
         ).fetchone()
         return _row_to_invoice(row) if row else None
 
+    _ALLOWED_UPDATE_FIELDS = frozenset({
+        "txid", "received_sat", "confirmations", "status", "confirmed_at",
+    })
+
     def update_payment(self, payment_id: str, **fields) -> None:
         if not fields:
             return
+        unknown = set(fields) - self._ALLOWED_UPDATE_FIELDS
+        if unknown:
+            raise ValueError(f"update_payment: campi non permessi: {unknown}")
         fields["updated_at"] = _now_ts()
         set_clause = ", ".join(f"{k} = ?" for k in fields)
         values = list(fields.values()) + [payment_id]
