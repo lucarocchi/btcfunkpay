@@ -125,7 +125,7 @@ FunkPay doesn't build the overlay — you do. Position the div however you want:
 | `data-amount` | — | Pre-fill amount in satoshis (always satoshis, regardless of `data-currency`) |
 | `data-label` | — | Order or user identifier stored with the invoice |
 | `data-theme` | `auto` | Color theme: `light`, `dark`, or `auto` (follows system `prefers-color-scheme`) |
-| `data-server` | — | Base URL of your self-hosted backend (e.g. `https://pay.mysite.com`). If omitted, the widget uses `btcfunk.com/pay`. |
+| `data-server` | **Required** | Base URL of your self-hosted backend (e.g. `https://your-server-here`). Without this the widget will not render. |
 
 **Events:**
 
@@ -252,7 +252,7 @@ uvicorn server:app --host 127.0.0.1 --port 8001
 Once your server is running, embed the widget with `data-server` pointing to your backend:
 
 ```html
-<div id="funkpay" data-currency="EUR" data-server="https://pay.mysite.com"></div>
+<div id="funkpay" data-server="https://your-server-here" data-currency="EUR"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 ```
 
