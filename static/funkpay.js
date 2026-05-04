@@ -758,8 +758,7 @@
     var el = document.getElementById('funkpay');
     if (!el) return;
     var server = (el.getAttribute('data-server') || '').replace(/\/$/, '');
-    var onBtcfunk = window.location.hostname === 'btcfunk.com';
-    if (!server && !onBtcfunk) {
+    if (!server) {
       var root = el.attachShadow({ mode: 'open' });
       root.innerHTML = '<div style="font-family:sans-serif;font-size:13px;color:#cc3300;padding:16px;border:1px solid #cc3300;border-radius:8px;">FunkPay: <b>data-server</b> not configured. Set <code>data-server</code> to your backend URL to receive payments in your own wallet.</div>';
       return;
