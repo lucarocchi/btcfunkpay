@@ -25,6 +25,9 @@ from fastapi.responses import Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from btcfunkpay import PaymentProcessor, PaymentEvent, load_config
 
@@ -102,7 +105,10 @@ async def lifespan(app: FastAPI):
 #  App                                                                         #
 # --------------------------------------------------------------------------- #
 
+_limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+app.state.limiter = _limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 _http_basic = HTTPBasic()
 
@@ -180,6 +186,7 @@ class InvoiceRequest(BaseModel):
 
 
 @app.post("/invoices")
+@_limiter.limit("20/minute")
 def create_invoice(req: InvoiceRequest, request: Request):
     inv = request.app.state.proc.create_invoice(
         amount_sat=req.amount_sat, label=req.label
