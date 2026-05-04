@@ -189,6 +189,8 @@ uvicorn server:app --port 8001
 | `data-theme` | `light` \| `dark` \| `auto` (default: auto-detect) |
 | `data-server` | Base URL of your self-hosted backend (e.g. `https://pay.mysite.com`). If omitted, uses `btcfunk.com/pay`. |
 
+> **Warning:** if you embed the widget without `data-server`, API calls go to `btcfunk.com/pay` and payments land in **our** wallet. To receive payments in your own wallet you must run your own backend and set `data-server` accordingly. See [INTEGRATION.md](INTEGRATION.md) for setup instructions.
+
 ---
 
 ## Payment status
