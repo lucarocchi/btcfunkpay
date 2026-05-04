@@ -79,38 +79,6 @@ Want a modal/popup? Style the div yourself with `position:fixed` — FunkPay doe
 
 Callbacks registered before or after the script loads both work — no postMessage needed, the widget calls them directly.
 
-### Modal / popup
-
-FunkPay doesn't build the overlay — you do. Position the div however you want:
-
-```html
-<style>
-  #funkpay-wrap {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
-    align-items: center; justify-content: center;
-    z-index: 9999;
-  }
-  #funkpay-wrap.open { display: flex; }
-  #funkpay { width: 380px; }
-</style>
-
-<div id="funkpay-wrap">
-  <div id="funkpay" data-server="https://pay.example.com" data-currency="EUR"></div>
-</div>
-<script src="https://btcfunk.com/pay/funkpay.js"></script>
-<script>
-  document.getElementById('pay-btn').addEventListener('click', function() {
-    document.getElementById('funkpay-wrap').classList.add('open');
-  });
-  FunkPay.on('confirmed', function(p) {
-    document.getElementById('funkpay-wrap').classList.remove('open');
-    activateSubscription(p.label);
-  });
-</script>
-```
-
 ### FunkPay API
 
 | | |
