@@ -30,6 +30,10 @@ _DEFAULTS = {
     "cors": {
         "allowed_origins": "*",
     },
+    "admin": {
+        "username": "admin",
+        "password": "",
+    },
 }
 
 _ENV_MAP = {
@@ -47,6 +51,8 @@ _ENV_MAP = {
     "BTCFUNKPAY_PORT":                    ("server",   "port"),
     "BTCFUNKPAY_WEBHOOK_URL":             ("notifications", "webhook_url"),
     "BTCFUNKPAY_ALLOWED_ORIGINS":         ("cors",          "allowed_origins"),
+    "BTCFUNKPAY_ADMIN_USERNAME":          ("admin",         "username"),
+    "BTCFUNKPAY_ADMIN_PASSWORD":          ("admin",         "password"),
 }
 
 
@@ -127,6 +133,15 @@ class Config:
     @property
     def allowed_origins(self) -> str:
         return self._cp.get("cors", "allowed_origins", fallback="*")
+
+    # admin
+    @property
+    def admin_username(self) -> str:
+        return self._cp.get("admin", "username", fallback="admin")
+
+    @property
+    def admin_password(self) -> str:
+        return self._cp.get("admin", "password", fallback="")
 
     def validate(self) -> None:
         if not self.xpub:

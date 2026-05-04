@@ -6,15 +6,17 @@ Usage:
   uvicorn server:app --reload
 """
 
+import secrets
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -95,6 +97,21 @@ async def lifespan(app: FastAPI):
 # --------------------------------------------------------------------------- #
 
 app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+
+_http_basic = HTTPBasic()
+
+def _require_admin(credentials: HTTPBasicCredentials = Depends(_http_basic)):
+    pw = cfg.admin_password
+    if not pw:
+        raise HTTPException(status_code=503, detail="Admin password not configured")
+    ok_user = secrets.compare_digest(credentials.username.encode(), cfg.admin_username.encode())
+    ok_pass = secrets.compare_digest(credentials.password.encode(), pw.encode())
+    if not (ok_user and ok_pass):
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized",
+            headers={"WWW-Authenticate": "Basic"},
+        )
 
 _origins = [o.strip() for o in cfg.allowed_origins.split(",") if o.strip()] or ["*"]
 app.add_middleware(
@@ -178,6 +195,7 @@ def list_invoices(
     status: str | None = Query(None, pattern=_STATUS_PATTERN),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
+    _: HTTPBasicCredentials = Depends(_require_admin),
 ):
     invoices = request.app.state.proc.list_invoices(
         status=status, limit=limit, offset=offset
