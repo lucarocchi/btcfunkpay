@@ -64,6 +64,11 @@ Want a modal/popup? Style the div yourself with `position:fixed` — FunkPay doe
 <div id="funkpay" data-server="https://pay.example.com" data-currency="EUR"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
+  FunkPay.on('detected', function(payment) {
+    // Transaction seen in mempool (0-conf) — do not release goods yet
+    console.log('in mempool', payment.payment_id);
+  });
+
   FunkPay.on('confirmed', function(payment) {
     // payment.payment_id   — invoice ID
     // payment.received_sat — satoshis received
@@ -77,6 +82,8 @@ Want a modal/popup? Style the div yourself with `position:fixed` — FunkPay doe
 </script>
 ```
 
+> **Note:** JS callbacks only fire while the user is on the page. For reliable server-side notifications use the [webhook](#webhook).
+
 Callbacks registered before or after the script loads both work — no postMessage needed, the widget calls them directly.
 
 ### FunkPay API
@@ -89,17 +96,19 @@ Callbacks registered before or after the script loads both work — no postMessa
 
 | Attribute | Default | Description |
 |-----------|---------|-------------|
+| `data-server` | **Required** | Base URL of your self-hosted backend (e.g. `https://pay.example.com`). Without this the widget displays a configuration error. |
 | `data-currency` | `USD` | Fiat display currency: `USD` `EUR` `GBP` `JPY` `CAD` `CHF` `AUD` |
 | `data-amount` | — | Pre-fill amount in satoshis (always satoshis, regardless of `data-currency`) |
-| `data-label` | — | Order or user identifier stored with the invoice |
+| `data-label` | — | Fixed order/user identifier stored with the invoice. If omitted, the widget shows a free "Reference" field for the user to fill in. |
 | `data-theme` | `auto` | Color theme: `light`, `dark`, or `auto` (follows system `prefers-color-scheme`) |
-| `data-server` | **Required** | Base URL of your self-hosted backend (e.g. `https://pay.example.com`). Without this the widget displays a configuration error. |
+| `data-success-url` | `/` | URL the browser navigates to when the user clicks "Done" after payment. Use for post-payment redirect (e.g. `/order-confirmed`). This is a browser-side redirect only — not a webhook. |
 
 **Events:**
 
 | Event | Payload | When |
 |-------|---------|------|
-| `confirmed` | `{ payment_id, received_sat, status }` | Payment confirmed on-chain |
+| `detected` | `{ payment_id, received_sat, txid, status }` | Transaction seen in mempool (0-conf). Do **not** release goods — use only for optimistic UI updates. |
+| `confirmed` | `{ payment_id, received_sat, txid, status }` | Required confirmations reached on-chain. Safe to release goods/services. |
 | `expired` | `{ payment_id }` | Invoice expired without payment |
 
 ---
@@ -189,6 +198,73 @@ Response:
 
 ---
 
+## Webhook
+
+The webhook is the **reliable** way to receive payment notifications server-side — it fires regardless of whether the user is still on the page.
+
+### Configuration
+
+Set in `btcfunkpay.conf`:
+
+```ini
+[notifications]
+webhook_url = https://your-backend.com/api/payment-webhook
+```
+
+Or via environment variable:
+
+```bash
+BTCFUNKPAY_WEBHOOK_URL=https://your-backend.com/api/payment-webhook
+```
+
+### When it fires
+
+Two POST requests are sent per successful payment:
+
+| Call | `status` | `confirmations` | When |
+|------|----------|-----------------|------|
+| 1st | `detected` | `0` | Transaction appears in mempool |
+| 2nd | `confirmed` | `≥ 1` | Required confirmations reached on-chain |
+
+### Payload
+
+```json
+{
+  "payment_id":    "7509006e-...",
+  "label":         "user-42",
+  "status":        "confirmed",
+  "received_sat":  50000,
+  "txid":          "abc123...",
+  "address":       "bc1q...",
+  "confirmations": 1
+}
+```
+
+### Example receiver (FastAPI)
+
+```python
+@app.post("/api/payment-webhook")
+async def payment_webhook(request: Request):
+    data = await request.json()
+    payment_id = data["payment_id"]
+    status     = data["status"]
+    received   = data["received_sat"]
+
+    if status == "detected":
+        # Optimistic: show "payment incoming" to the user
+        pass
+
+    if status == "confirmed":
+        # Safe: release the order / activate the account
+        activate_order(payment_id, received)
+
+    return {"ok": True}
+```
+
+> **Security note:** the webhook has no signature — anyone who knows the URL can POST to it. Add a secret token in the URL (`/api/payment-webhook?token=...`) or validate the `payment_id` against your own database before acting on it.
+
+---
+
 ## Server setup (self-hosted)
 
 ### Requirements
@@ -235,6 +311,10 @@ Environment variables override the config file (useful for Docker):
 | `BTCFUNKPAY_XPUB` | `bitcoin.xpub` |
 | `BTCFUNKPAY_RPC_URL` | `bitcoin.rpc_url` |
 | `BTCFUNKPAY_REQUIRED_CONFIRMATIONS` | `payments.required_confirmations` |
+| `BTCFUNKPAY_WEBHOOK_URL` | `notifications.webhook_url` |
+| `BTCFUNKPAY_ALLOWED_ORIGINS` | `cors.allowed_origins` |
+| `BTCFUNKPAY_ADMIN_USERNAME` | `admin.username` (default: `admin`) |
+| `BTCFUNKPAY_ADMIN_PASSWORD` | `admin.password` — required to access `GET /invoices` |
 | `BTCFUNKPAY_CONFIG` | path to config file |
 
 ### Run
