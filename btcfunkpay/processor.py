@@ -108,15 +108,17 @@ class PaymentProcessor:
         label: Optional[str] = None,
         expires_in: Optional[int] = None,
     ) -> Invoice:
-        index = self._store.get_next_index(self._xpub)
-        address = derive_address(self._xpub, change=0, index=index, mainnet=self._mainnet)
-
         expiry_secs = expires_in if expires_in is not None else self._expiry_seconds
         expires_at: Optional[datetime] = None
         if expiry_secs is not None:
             expires_at = datetime.now(timezone.utc) + timedelta(seconds=expiry_secs)
 
-        return self._store.create_payment(address, index, amount_sat, label, expires_at)
+        def _derive(index: int) -> str:
+            return derive_address(self._xpub, change=0, index=index, mainnet=self._mainnet)
+
+        return self._store.allocate_and_create_payment(
+            self._xpub, _derive, amount_sat, label, expires_at
+        )
 
     def get_invoice(self, payment_id: str) -> Optional[Invoice]:
         return self._store.get_payment(payment_id)

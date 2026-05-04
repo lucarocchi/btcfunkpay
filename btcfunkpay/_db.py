@@ -4,7 +4,7 @@ import sqlite3
 import threading
 import uuid
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Callable, Optional
 
 from ._models import Invoice, PaymentStatus
 
@@ -75,46 +75,49 @@ class PaymentStore:
         self._lock = threading.Lock()
         self._conn.executescript(_SCHEMA)
 
-    def get_next_index(self, xpub: str) -> int:
+    def allocate_and_create_payment(
+        self,
+        xpub: str,
+        derive_address: Callable[[int], str],
+        amount_sat: Optional[int],
+        label: Optional[str],
+        expires_at: Optional[datetime],
+    ) -> Invoice:
+        """Atomically allocate the next xpub index, derive the address, and insert the payment.
+
+        derive_address must be a pure function (no I/O) — it runs inside the DB transaction.
+        The single BEGIN IMMEDIATE lock prevents two concurrent workers from ever getting
+        the same index, eliminating the race between the old get_next_index + create_payment pair.
+        """
+        payment_id = str(uuid.uuid4())
+        now = _now_ts()
+        exp_ts = int(expires_at.timestamp()) if expires_at else None
         with self._lock:
             self._conn.execute("BEGIN IMMEDIATE")
             row = self._conn.execute(
                 "SELECT next_index FROM address_index WHERE xpub = ?", (xpub,)
             ).fetchone()
             if row is None:
+                idx = 0
                 self._conn.execute(
                     "INSERT INTO address_index (xpub, next_index) VALUES (?, 1)", (xpub,)
                 )
-                idx = 0
             else:
                 idx = row["next_index"]
                 self._conn.execute(
                     "UPDATE address_index SET next_index = ? WHERE xpub = ?",
                     (idx + 1, xpub),
                 )
-            self._conn.execute("COMMIT")
-        return idx
-
-    def create_payment(
-        self,
-        address: str,
-        xpub_index: int,
-        amount_sat: Optional[int],
-        label: Optional[str],
-        expires_at: Optional[datetime],
-    ) -> Invoice:
-        payment_id = str(uuid.uuid4())
-        now = _now_ts()
-        exp_ts = int(expires_at.timestamp()) if expires_at else None
-        with self._lock:
+            address = derive_address(idx)
             self._conn.execute(
                 """INSERT INTO payments
                    (id, address, xpub_index, amount_sat, label, status,
                     created_at, expires_at, received_sat, confirmations, updated_at)
                    VALUES (?,?,?,?,?,?,?,?,0,0,?)""",
-                (payment_id, address, xpub_index, amount_sat, label,
+                (payment_id, address, idx, amount_sat, label,
                  PaymentStatus.PENDING.value, now, exp_ts, now),
             )
+            self._conn.execute("COMMIT")
         return self.get_payment(payment_id)
 
     def get_payment(self, payment_id: str) -> Optional[Invoice]:
