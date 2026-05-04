@@ -33,6 +33,12 @@ This isn't a workaround — it's the same logic behind every contactless payment
 
 **Live demo → [btcfunk.com/#support](https://btcfunk.com/#support)**
 
+<p align="center">
+  <img src="docs/step1.png" width="220" alt="Step 1 — enter amount">
+  <img src="docs/step2.png" width="220" alt="Step 2 — scan QR">
+  <img src="docs/step3.png" width="220" alt="Step 3 — confirmed">
+</p>
+
 ---
 
 ## Overview
