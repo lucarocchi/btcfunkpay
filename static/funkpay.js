@@ -372,7 +372,7 @@
         <div class="input-group" id="reference-group" style="display:none">
           <label class="input-label" for="reference-input">Reference</label>
           <div class="field-wrap">
-            <input id="reference-input" type="text" placeholder="email, name, order ID…" style="padding-left:12px">
+            <input id="reference-input" type="text" placeholder="email, name…" style="padding-left:12px">
           </div>
         </div>
 
