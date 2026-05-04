@@ -370,7 +370,7 @@
         </div>
 
         <div class="input-group" id="reference-group" style="display:none">
-          <label class="input-label" for="reference-input">Reference (optional)</label>
+          <label class="input-label" for="reference-input">Reference <span style="text-transform:none;font-weight:400;opacity:0.6">(optional)</span></label>
           <div class="field-wrap">
             <input id="reference-input" type="text" placeholder="email, name…" style="padding-left:12px">
           </div>
