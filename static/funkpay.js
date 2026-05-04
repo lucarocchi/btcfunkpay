@@ -369,6 +369,13 @@
           </div>
         </div>
 
+        <div class="input-group" id="reference-group" style="display:none">
+          <label class="input-label" for="reference-input">Reference</label>
+          <div class="field-wrap">
+            <input id="reference-input" type="text" placeholder="email, name, order ID…" style="padding-left:12px">
+          </div>
+        </div>
+
         <div class="pay-hint">
           Enter fiat or BTC amount.<br>Click <b>Pay</b>, scan the QR with your Bitcoin wallet and<br>Send.<br><a href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">Open source · MIT</a>
         </div>
@@ -458,6 +465,11 @@
         ? 'dark' : 'light';
     }
     wrapper.setAttribute('data-theme', theme);
+
+    // --- show reference field if no label set ---
+    if (!opts.label) {
+      root.getElementById('reference-group').style.display = 'block';
+    }
 
     // --- pre-fill currency ---
     if (opts.currency) {
@@ -571,7 +583,7 @@
       btn.textContent = 'Creating...';
 
       var amount_sat = satFromBtcField() || null;
-      var label = opts.label || null;
+      var label = opts.label || root.getElementById('reference-input').value.trim() || null;
 
       try {
         var res = await fetch(base + '/invoices', {
