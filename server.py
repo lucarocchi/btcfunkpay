@@ -6,11 +6,17 @@ Usage:
   uvicorn server:app --reload
 """
 
+import logging
 import secrets
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import urlparse
+
+# Prevent urllib3/requests from logging HTTP bodies at DEBUG level.
+# importdescriptors RPC payloads contain the full xpub — keep them out of logs.
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
