@@ -96,12 +96,6 @@ async def payment_webhook(request: Request):
 ## Installation
 
 ```bash
-pip install btcfunkpay
-```
-
-Or from source:
-
-```bash
 git clone https://github.com/lucarocchi/btcfunkpay.git
 cd btcfunkpay
 pip install -e .
