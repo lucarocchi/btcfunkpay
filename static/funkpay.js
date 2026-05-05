@@ -175,6 +175,10 @@
       background: #ffffff;
       outline: none;
       cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 42px;
+      box-sizing: border-box;
     }
     [data-theme="dark"] select {
       border-color: #3a3a3a;
