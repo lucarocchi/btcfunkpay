@@ -417,7 +417,15 @@
           <div class="ok-title" id="ok-title">Payment received!</div>
           <div class="ok-sub" id="ok-sub" style="display:none;font-size:12px;color:#999999;margin-bottom:12px;line-height:1.6;"></div>
           <div class="ok-amount" id="ok-amount"></div>
-          <div class="ok-txid" id="ok-txid" title="Click to copy txid"></div>
+          <div id="ok-receipt" style="display:none;font-size:11px;color:#aaaaaa;margin-top:8px;display:flex;align-items:center;gap:6px;">
+            <span id="ok-receipt-id"></span>
+            <span id="ok-receipt-copy" title="Copy receipt ID" style="cursor:pointer;opacity:0.6;">⎘</span>
+          </div>
+          <div id="ok-txid-row" style="display:none;font-size:11px;color:#aaaaaa;margin-top:4px;display:flex;align-items:center;gap:6px;">
+            <span id="ok-txid-short"></span>
+            <span id="ok-txid-copy" title="Copy txid" style="cursor:pointer;opacity:0.6;">⎘</span>
+            <a id="ok-txid-link" href="#" target="_blank" rel="noopener" style="color:#f7931a;text-decoration:none;opacity:0.8;">View ↗</a>
+          </div>
         </div>
         <button id="thankyou-btn" style="background:#22c55e;margin-top:auto;">Done</button>
       </div>
@@ -675,55 +683,65 @@
         txidRow.appendChild(txidSpan);
       }
 
-      if (data.status === 'detected') {
+      function _showSuccess(title, subText, amountText, data) {
         root.getElementById('invoice').style.display = 'none';
         root.getElementById('form').style.display = 'none';
-        var s = root.getElementById('payment-success');
-        s.style.display = 'flex';
-        root.getElementById('ok-title').textContent = 'Payment detected!';
+        root.getElementById('payment-success').style.display = 'flex';
+        root.getElementById('ok-title').textContent = title;
         var okSub = root.getElementById('ok-sub');
-        okSub.textContent = 'Transaction seen in mempool. Waiting for on-chain confirmation — this usually takes 10–60 minutes.';
+        okSub.textContent = subText;
         okSub.style.display = 'block';
-        var sat = data.received_sat || 0;
-        root.getElementById('ok-amount').textContent = (sat / 1e8).toFixed(8) + ' BTC pending';
-        if (data.txid) {
-          var okTxid = root.getElementById('ok-txid');
-          okTxid.textContent = 'txid: ' + data.txid;
-          okTxid.onclick = (function(t) {
-            return function() {
-              navigator.clipboard.writeText(t).then(function() {
-                okTxid.style.color = '#22c55e';
-                setTimeout(function() { okTxid.style.color = ''; }, 800);
-              });
-            };
-          })(data.txid);
+        root.getElementById('ok-amount').textContent = amountText;
+
+        // receipt ID
+        if (data.payment_id) {
+          var receiptEl = root.getElementById('ok-receipt');
+          receiptEl.style.display = 'flex';
+          root.getElementById('ok-receipt-id').textContent = 'Receipt: ' + data.payment_id;
+          root.getElementById('ok-receipt-copy').onclick = function() {
+            navigator.clipboard.writeText(data.payment_id).then(function() {
+              var el = root.getElementById('ok-receipt-copy');
+              el.textContent = '✓';
+              setTimeout(function() { el.textContent = '⎘'; }, 1500);
+            });
+          };
         }
+
+        // txid with copy + explorer link
+        if (data.txid) {
+          var txRow = root.getElementById('ok-txid-row');
+          txRow.style.display = 'flex';
+          root.getElementById('ok-txid-short').textContent = 'txid: ' + data.txid.slice(0, 8) + '…' + data.txid.slice(-8);
+          root.getElementById('ok-txid-copy').onclick = function() {
+            navigator.clipboard.writeText(data.txid).then(function() {
+              var el = root.getElementById('ok-txid-copy');
+              el.textContent = '✓';
+              setTimeout(function() { el.textContent = '⎘'; }, 1500);
+            });
+          };
+          root.getElementById('ok-txid-link').href = 'https://mempool.space/tx/' + data.txid;
+        }
+      }
+
+      if (data.status === 'detected') {
+        var sat = data.received_sat || 0;
+        _showSuccess(
+          'Payment detected!',
+          'Transaction seen in mempool. Waiting for on-chain confirmation — this usually takes 10–60 minutes.',
+          (sat / 1e8).toFixed(8) + ' BTC pending',
+          data
+        );
         if (_callbacks.detected) _callbacks.detected(data);
       }
 
       if (['confirmed', 'overpaid'].includes(data.status)) {
-        root.getElementById('invoice').style.display = 'none';
-        root.getElementById('form').style.display = 'none';
-        var s = root.getElementById('payment-success');
-        s.style.display = 'flex';
-        root.getElementById('ok-title').textContent = 'Payment confirmed!';
-        var okSub = root.getElementById('ok-sub');
-        okSub.textContent = 'Your payment has been confirmed on the Bitcoin network. Thank you for paying with Bitcoin!';
-        okSub.style.display = 'block';
         var sat = data.received_sat || 0;
-        root.getElementById('ok-amount').textContent = (sat / 1e8).toFixed(8) + ' BTC received';
-        if (data.txid) {
-          var okTxid = root.getElementById('ok-txid');
-          okTxid.textContent = 'txid: ' + data.txid;
-          okTxid.onclick = (function(t) {
-            return function() {
-              navigator.clipboard.writeText(t).then(function() {
-                okTxid.style.color = '#22c55e';
-                setTimeout(function() { okTxid.style.color = ''; }, 800);
-              });
-            };
-          })(data.txid);
-        }
+        _showSuccess(
+          'Payment confirmed!',
+          'Your payment has been confirmed on the Bitcoin network. Thank you for paying with Bitcoin!',
+          (sat / 1e8).toFixed(8) + ' BTC received',
+          data
+        );
         if (_callbacks.confirmed) _callbacks.confirmed(data);
       }
 
