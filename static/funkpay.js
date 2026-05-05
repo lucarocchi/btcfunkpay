@@ -417,11 +417,11 @@
           <div class="ok-title" id="ok-title">Payment received!</div>
           <div class="ok-sub" id="ok-sub" style="display:none;font-size:12px;color:#999999;margin-bottom:12px;line-height:1.6;"></div>
           <div class="ok-amount" id="ok-amount"></div>
-          <div id="ok-receipt" style="display:none;font-size:11px;color:#aaaaaa;margin-top:8px;display:flex;align-items:center;gap:6px;">
+          <div id="ok-receipt" style="display:none;font-size:11px;color:#aaaaaa;margin-top:8px;align-items:center;gap:6px;">
             <span id="ok-receipt-id"></span>
             <span id="ok-receipt-copy" title="Copy receipt ID" style="cursor:pointer;opacity:0.6;">⎘</span>
           </div>
-          <div id="ok-txid-row" style="display:none;font-size:11px;color:#aaaaaa;margin-top:4px;display:flex;align-items:center;gap:6px;">
+          <div id="ok-txid-row" style="display:none;font-size:11px;color:#aaaaaa;margin-top:4px;align-items:center;gap:6px;">
             <span id="ok-txid-short"></span>
             <span id="ok-txid-copy" title="Copy txid" style="cursor:pointer;opacity:0.6;">⎘</span>
             <a id="ok-txid-link" href="#" target="_blank" rel="noopener" style="color:#f7931a;text-decoration:none;opacity:0.8;">View ↗</a>
@@ -781,16 +781,12 @@
 
     function showThankYou() {
       clearInterval(pollTimer);
-      root.getElementById('invoice').style.display = 'none';
-      root.getElementById('form').style.display = 'none';
-      var s = root.getElementById('payment-success');
-      s.style.display = 'flex';
-      root.getElementById('ok-title').textContent = 'Thank you!';
-      var okSub = root.getElementById('ok-sub');
-      okSub.textContent = 'Your payment is on its way. Bitcoin transactions typically confirm within 10–60 minutes. You can close this page.';
-      okSub.style.display = 'block';
-      root.getElementById('ok-amount').textContent = '';
-      root.getElementById('ok-txid').textContent = '';
+      _showSuccess(
+        'Thank you!',
+        'Your payment is on its way. Bitcoin transactions typically confirm within 10–60 minutes. You can close this page.',
+        '',
+        { payment_id: paymentId, txid: null }
+      );
     }
 
     function reset() {
