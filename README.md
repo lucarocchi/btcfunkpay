@@ -215,6 +215,49 @@ uvicorn server:app --port 8001
 | `data-theme` | `light` \| `dark` \| `auto` (default: auto-detect) |
 | `data-success-url` | URL the browser navigates to when the user clicks "Done" (default: `/`). Browser-side only — not a webhook. |
 
+> **JS callbacks fire only while the user is on the page.** For reliable server-side notifications — especially after the user closes the browser — use the webhook instead.
+
+### Webhook (server-side)
+
+Configure in `btcfunkpay.conf` or via env:
+
+```ini
+[notifications]
+webhook_url = https://your-backend.com/api/payment-webhook
+```
+
+Your backend receives two POST requests per payment — one on `detected`, one on `confirmed`:
+
+```json
+{
+  "payment_id":    "7509006e-...",
+  "label":         "user-42",
+  "status":        "confirmed",
+  "received_sat":  50000,
+  "txid":          "abc123...",
+  "address":       "bc1q...",
+  "confirmations": 1
+}
+```
+
+Example receiver:
+
+```python
+@app.post("/api/payment-webhook")
+async def payment_webhook(request: Request):
+    data = await request.json()
+
+    if data["status"] == "detected":
+        # 0-conf mempool — optimistic update, do NOT release goods yet
+        notify_user_incoming(data["payment_id"])
+
+    if data["status"] == "confirmed":
+        # on-chain confirmed — safe to release goods/services
+        activate_order(data["payment_id"], data["received_sat"])
+
+    return {"ok": True}
+```
+
 > **CORS:** the widget runs on your domain and calls your backend — your server must allow cross-origin requests. CORS is enabled by default (`allowed_origins = *`). To restrict it, set `allowed_origins` in `btcfunkpay.conf` or via `BTCFUNKPAY_ALLOWED_ORIGINS`.
 
 ---
