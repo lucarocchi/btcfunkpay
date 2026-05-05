@@ -48,10 +48,16 @@ FunkPay is a Python library for accepting Bitcoin on-chain payments. It derives 
 It also ships an **embeddable JS widget** — drop one `<script>` tag on any page and a payment widget appears inline.
 
 ```html
-<div id="funkpay" data-server="https://pay.example.com" data-currency="EUR" data-label="user-42"></div>
+<div id="funkpay"
+     data-server="https://pay.example.com"
+     data-currency="USD"
+     data-label="user-42">
+</div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
+  FunkPay.on('detected',  (payment) => showMessage('Payment incoming...'));
   FunkPay.on('confirmed', (payment) => activateSubscription(payment.label));
+  FunkPay.on('expired',   (payment) => showMessage('Invoice expired.'));
 </script>
 ```
 
@@ -173,16 +179,27 @@ uvicorn server:app --port 8001
 
 ```html
 <!-- 1. Place the div -->
-<div id="funkpay" data-server="https://pay.example.com" data-currency="EUR"></div>
+<div id="funkpay"
+     data-server="https://pay.example.com"
+     data-currency="USD">
+</div>
 
 <!-- 2. Load the widget — auto-mounts into the div above -->
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 
 <!-- 3. Handle events (optional) -->
 <script>
+  FunkPay.on('detected', function(payment) {
+    // 0-conf mempool — show optimistic UI, do NOT release goods yet
+    showMessage('Payment incoming, waiting for confirmation...');
+  });
   FunkPay.on('confirmed', function(payment) {
-    // payment.payment_id, payment.received_sat, payment.status
-    console.log('Confirmed!', payment);
+    // on-chain confirmed — safe to release goods/services
+    // payment.payment_id, payment.received_sat, payment.label, payment.status
+    activateSubscription(payment.label);
+  });
+  FunkPay.on('expired', function(payment) {
+    showMessage('Invoice expired, please try again.');
   });
 </script>
 ```
@@ -194,8 +211,9 @@ uvicorn server:app --port 8001
 | `data-server` | **Required.** Base URL of your self-hosted backend (e.g. `https://pay.example.com`). Without this the widget will not render. |
 | `data-currency` | Fiat currency: `USD` `EUR` `GBP` `JPY` `CAD` `CHF` `AUD` |
 | `data-amount` | Pre-fill amount in satoshis (always satoshis, regardless of `data-currency`) |
-| `data-label` | Order / user identifier |
+| `data-label` | Fixed order/user identifier. If omitted, the widget shows a free "Reference" field for the user. |
 | `data-theme` | `light` \| `dark` \| `auto` (default: auto-detect) |
+| `data-success-url` | URL the browser navigates to when the user clicks "Done" (default: `/`). Browser-side only — not a webhook. |
 
 > **CORS:** the widget runs on your domain and calls your backend — your server must allow cross-origin requests. CORS is enabled by default (`allowed_origins = *`). To restrict it, set `allowed_origins` in `btcfunkpay.conf` or via `BTCFUNKPAY_ALLOWED_ORIGINS`.
 
