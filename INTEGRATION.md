@@ -51,7 +51,7 @@ Want a modal/popup? Style the div yourself with `position:fixed` — FunkPay doe
 ```html
 <div id="funkpay"
      data-server="https://pay.example.com"
-     data-currency="EUR"
+     data-currency="USD"
      data-label="user-42"
      data-theme="auto">
 </div>
@@ -61,23 +61,28 @@ Want a modal/popup? Style the div yourself with `position:fixed` — FunkPay doe
 ### With payment callbacks
 
 ```html
-<div id="funkpay" data-server="https://pay.example.com" data-currency="EUR"></div>
+<div id="funkpay"
+     data-server="https://pay.example.com"
+     data-currency="USD"
+     data-label="user-42">
+</div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 <script>
   FunkPay.on('detected', function(payment) {
-    // Transaction seen in mempool (0-conf) — do not release goods yet
-    console.log('in mempool', payment.payment_id);
+    // Transaction in mempool (0-conf) — show optimistic UI, do NOT release goods yet
+    showMessage('Payment detected, waiting for confirmation...');
   });
 
   FunkPay.on('confirmed', function(payment) {
     // payment.payment_id   — invoice ID
     // payment.received_sat — satoshis received
+    // payment.label        — your order/user identifier
     // payment.status       — 'confirmed' or 'overpaid'
     activateSubscription(payment.label);
   });
 
   FunkPay.on('expired', function(payment) {
-    console.log('expired', payment.payment_id);
+    showMessage('Invoice expired, please try again.');
   });
 </script>
 ```
@@ -328,7 +333,7 @@ uvicorn server:app --host 127.0.0.1 --port 8001
 Once your server is running, embed the widget with `data-server` pointing to your backend:
 
 ```html
-<div id="funkpay" data-server="https://pay.example.com" data-currency="EUR"></div>
+<div id="funkpay" data-server="https://pay.example.com" data-currency="USD"></div>
 <script src="https://btcfunk.com/pay/funkpay.js"></script>
 ```
 
