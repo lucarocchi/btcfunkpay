@@ -658,32 +658,8 @@
     }
 
     var _VALID_STATUSES = {pending:1, detected:1, confirmed:1, expired:1, overpaid:1};
-    function updateStatus(data) {
-      var row = root.getElementById('status-row');
-      var safeStatus = _VALID_STATUSES[data.status] ? data.status : 'pending';
-      row.className = 'status-row status-' + safeStatus;
-      root.getElementById('status-text').textContent =
-        STATUS_LABELS[data.status] || data.status;
 
-      var txidRow = root.getElementById('txid-row');
-      if (data.txid) {
-        var txid = data.txid;
-        txidRow.innerHTML = '';
-        var txidSpan = document.createElement('span');
-        txidSpan.style.cssText = 'cursor:pointer;text-decoration:underline;text-underline-offset:2px';
-        txidSpan.title = 'Copy txid';
-        txidSpan.textContent = 'txid: ' + txid;
-        txidSpan.addEventListener('click', function() {
-          navigator.clipboard.writeText(txid).then(function() {
-            var prev = txidRow.style.color;
-            txidRow.style.color = '#22c55e';
-            setTimeout(function() { txidRow.style.color = prev; }, 800);
-          });
-        });
-        txidRow.appendChild(txidSpan);
-      }
-
-      function _showSuccess(title, subText, amountText, data) {
+    function _showSuccess(title, subText, amountText, data) {
         root.getElementById('invoice').style.display = 'none';
         root.getElementById('form').style.display = 'none';
         root.getElementById('payment-success').style.display = 'flex';
@@ -721,6 +697,31 @@
           };
           root.getElementById('ok-txid-link').href = 'https://mempool.space/tx/' + data.txid;
         }
+    }
+
+    function updateStatus(data) {
+      var row = root.getElementById('status-row');
+      var safeStatus = _VALID_STATUSES[data.status] ? data.status : 'pending';
+      row.className = 'status-row status-' + safeStatus;
+      root.getElementById('status-text').textContent =
+        STATUS_LABELS[data.status] || data.status;
+
+      var txidRow = root.getElementById('txid-row');
+      if (data.txid) {
+        var txid = data.txid;
+        txidRow.innerHTML = '';
+        var txidSpan = document.createElement('span');
+        txidSpan.style.cssText = 'cursor:pointer;text-decoration:underline;text-underline-offset:2px';
+        txidSpan.title = 'Copy txid';
+        txidSpan.textContent = 'txid: ' + txid;
+        txidSpan.addEventListener('click', function() {
+          navigator.clipboard.writeText(txid).then(function() {
+            var prev = txidRow.style.color;
+            txidRow.style.color = '#22c55e';
+            setTimeout(function() { txidRow.style.color = prev; }, 800);
+          });
+        });
+        txidRow.appendChild(txidSpan);
       }
 
       if (data.status === 'detected') {
