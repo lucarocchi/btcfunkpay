@@ -47,6 +47,8 @@ FunkPay is a Python library for accepting Bitcoin on-chain payments. It derives 
 
 It also ships an **embeddable JS widget** — drop one `<script>` tag on any page and a payment widget appears inline.
 
+**Widget (browser-side):**
+
 ```html
 <div id="funkpay"
      data-server="https://pay.example.com"
@@ -59,6 +61,19 @@ It also ships an **embeddable JS widget** — drop one `<script>` tag on any pag
   FunkPay.on('confirmed', (payment) => activateSubscription(payment.label));
   FunkPay.on('expired',   (payment) => showMessage('Invoice expired.'));
 </script>
+```
+
+**Webhook (server-side, fires even if the user closes the browser):**
+
+```python
+@app.post("/api/payment-webhook")
+async def payment_webhook(request: Request):
+    data = await request.json()
+    if data["status"] == "detected":
+        notify_user_incoming(data["payment_id"])   # 0-conf, do not release goods yet
+    if data["status"] == "confirmed":
+        activate_order(data["payment_id"])          # on-chain, safe to deliver
+    return {"ok": True}
 ```
 
 > **Note:** the widget includes an "I've paid" button that the user can click at any time, even without sending any amount. It only shows a thank-you screen on the user's side — if no transaction arrives on-chain, no success callback or webhook call will ever be triggered.
