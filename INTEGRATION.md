@@ -285,7 +285,7 @@ git clone https://github.com/lucarocchi/btcfunkpay.git
 cd btcfunkpay
 python3 -m venv venv
 source venv/bin/activate
-pip install -e ".[demo]"
+pip install -e .
 ```
 
 ### Configuration

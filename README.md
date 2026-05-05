@@ -104,7 +104,7 @@ Or from source:
 ```bash
 git clone https://github.com/lucarocchi/btcfunkpay.git
 cd btcfunkpay
-pip install -e ".[demo]"
+pip install -e .
 ```
 
 **Requirements:** Python 3.11+ · Bitcoin Core node (pruned is fine)
