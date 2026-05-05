@@ -94,7 +94,7 @@
 
     .header-sub {
       font-size: 12px;
-      color: #555555;
+      color: #333333;
       margin: 0;
     }
 
@@ -107,7 +107,7 @@
     }
     #success-content { flex: 1; display: flex; flex-direction: column; justify-content: center; }
     #payment-success .ok-title { font-size: 1.1rem; font-weight: 700; color: #22c55e; margin-bottom: 8px; }
-    #payment-success .ok-amount { font-size: 0.85rem; color: #555555; margin-bottom: 8px; }
+    #payment-success .ok-amount { font-size: 0.85rem; color: #333333; margin-bottom: 8px; }
     [data-theme="dark"] #payment-success .ok-amount { color: #aaaaaa; }
     #payment-success .ok-txid { font-size: 10px; font-family: monospace; color: #999999; word-break: break-all; cursor: pointer; }
     [data-theme="dark"] #payment-success .ok-txid { color: #666666; }
@@ -118,7 +118,7 @@
       display: block;
       font-size: 11px;
       font-weight: 500;
-      color: #999999;
+      color: #555555;
       text-transform: uppercase;
       letter-spacing: 0.6px;
       margin-bottom: 6px;
@@ -210,11 +210,11 @@
       margin-top: 8px;
       margin-bottom: 0;
       font-size: 12px;
-      color: #888888;
+      color: #555555;
       line-height: 1.6;
     }
     [data-theme="dark"] .pay-hint { color: #888888; }
-    .pay-hint b { color: #555555; font-weight: 600; }
+    .pay-hint b { color: #333333; font-weight: 600; }
     [data-theme="dark"] .pay-hint b { color: #bbbbbb; }
 
     /* ---- invoice panel ---- */
@@ -260,7 +260,7 @@
     .copy-btn {
       background: none;
       border: 1px solid #dddddd;
-      color: #555555;
+      color: #333333;
       border-radius: 6px;
       padding: 4px 10px;
       font-size: 11px;
@@ -280,7 +280,7 @@
       display: flex;
       justify-content: space-between;
       font-size: 12px;
-      color: #888888;
+      color: #555555;
       margin-bottom: 10px;
     }
     [data-theme="dark"] .meta-row { color: #666666; }
@@ -301,7 +301,7 @@
       flex-shrink: 0;
     }
 
-    .status-pending   { color: #999999; }
+    .status-pending   { color: #666666; }
     [data-theme="dark"] .status-pending { color: #666666; }
     .status-pending .dot { background: #22c55e; animation: pulse 1.4s infinite; }
     [data-theme="dark"] .status-pending .dot { background: #22c55e; }
@@ -326,7 +326,7 @@
     .txid {
       font-size: 10px;
       font-family: monospace;
-      color: #888888;
+      color: #555555;
       word-break: break-all;
       margin-top: 8px;
     }
