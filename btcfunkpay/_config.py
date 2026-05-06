@@ -23,6 +23,8 @@ _DEFAULTS = {
         "db_path": "btcfunkpay.sqlite",
         "host": "127.0.0.1",
         "port": "8001",
+        "public_url": "",   # e.g. https://btcfunk.com/pay — used in well-known discovery
+        "name": "",         # display name, e.g. "btcfunk.com"
     },
     "notifications": {
         "webhook_url": "",
@@ -49,6 +51,8 @@ _ENV_MAP = {
     "BTCFUNKPAY_DB_PATH":                 ("server",   "db_path"),
     "BTCFUNKPAY_HOST":                    ("server",   "host"),
     "BTCFUNKPAY_PORT":                    ("server",   "port"),
+    "BTCFUNKPAY_PUBLIC_URL":              ("server",   "public_url"),
+    "BTCFUNKPAY_NAME":                    ("server",   "name"),
     "BTCFUNKPAY_WEBHOOK_URL":             ("notifications", "webhook_url"),
     "BTCFUNKPAY_ALLOWED_ORIGINS":         ("cors",          "allowed_origins"),
     "BTCFUNKPAY_ADMIN_USERNAME":          ("admin",         "username"),
@@ -123,6 +127,14 @@ class Config:
     @property
     def port(self) -> int:
         return self._cp["server"].getint("port")
+
+    @property
+    def public_url(self) -> str:
+        return self._cp.get("server", "public_url", fallback="")
+
+    @property
+    def name(self) -> str:
+        return self._cp.get("server", "name", fallback="")
 
     # notifications
     @property

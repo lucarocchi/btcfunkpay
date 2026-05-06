@@ -150,6 +150,14 @@ def root():
     return {"service": "btcfunkpay", "version": "1.0"}
 
 
+@app.get("/.well-known/funkpay.json")
+def well_known():
+    """FunkPay service discovery — lets AI agents auto-discover this server from a domain."""
+    server = cfg.public_url.rstrip("/") if cfg.public_url else ""
+    name = cfg.name or (cfg.public_url.split("//")[-1].split("/")[0] if cfg.public_url else "btcfunkpay")
+    return {"server": server, "name": name, "version": "1.0"}
+
+
 @app.get("/funkpay.js")
 def funkpay_js():
     path = _STATIC_DIR / "funkpay.js"
