@@ -145,5 +145,7 @@ proc.run_forever()
 - ✅ Libreria funzionante, testata
 - ✅ Server FastAPI con REST API + widget
 - ✅ Demo live su btcfunk.com/#support
-- 🔲 Estendere Invoice per supportare `shipping` e `billing` metadata (per beni fisici acquistati da agent via funkpayai)
+- ✅ Invoice esteso con `shipping` e `billing` metadata (campi opzionali, compatibile con widget esistente)
+- ✅ DB migration automatica per colonne shipping/billing su DB esistenti
+- ✅ Webhook include shipping/billing quando presenti
 - 🔲 Notifica agent dopo conferma pagamento (callback URL o polling)

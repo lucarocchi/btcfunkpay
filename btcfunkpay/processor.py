@@ -4,7 +4,7 @@ import asyncio
 import logging
 import threading
 from datetime import datetime, timedelta, timezone
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from ._bip32 import derive_address
 from ._db import PaymentStore
@@ -107,6 +107,8 @@ class PaymentProcessor:
         amount_sat: Optional[int] = None,
         label: Optional[str] = None,
         expires_in: Optional[int] = None,
+        shipping: Optional[dict[str, Any]] = None,
+        billing: Optional[dict[str, Any]] = None,
     ) -> Invoice:
         expiry_secs = expires_in if expires_in is not None else self._expiry_seconds
         expires_at: Optional[datetime] = None
@@ -117,7 +119,7 @@ class PaymentProcessor:
             return derive_address(self._xpub, change=0, index=index, mainnet=self._mainnet)
 
         return self._store.allocate_and_create_payment(
-            self._xpub, _derive, amount_sat, label, expires_at
+            self._xpub, _derive, amount_sat, label, expires_at, shipping, billing
         )
 
     def get_invoice(self, payment_id: str) -> Optional[Invoice]:

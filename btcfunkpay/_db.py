@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
 import sqlite3
 import threading
 import uuid
 from datetime import datetime, timezone
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 from ._models import Invoice, PaymentStatus
 
@@ -24,7 +25,9 @@ CREATE TABLE IF NOT EXISTS payments (
     received_sat  INTEGER NOT NULL DEFAULT 0,
     confirmations INTEGER NOT NULL DEFAULT 0,
     confirmed_at  INTEGER,
-    updated_at    INTEGER NOT NULL
+    updated_at    INTEGER NOT NULL,
+    shipping      TEXT,
+    billing       TEXT
 );
 
 CREATE TABLE IF NOT EXISTS address_index (
@@ -50,6 +53,7 @@ def _ts_to_dt(ts: Optional[int]) -> Optional[datetime]:
 
 
 def _row_to_invoice(row: sqlite3.Row) -> Invoice:
+    keys = row.keys()
     return Invoice(
         payment_id=row["id"],
         address=row["address"],
@@ -63,7 +67,15 @@ def _row_to_invoice(row: sqlite3.Row) -> Invoice:
         received_sat=row["received_sat"],
         confirmations=row["confirmations"],
         confirmed_at=_ts_to_dt(row["confirmed_at"]),
+        shipping=json.loads(row["shipping"]) if "shipping" in keys and row["shipping"] else None,
+        billing=json.loads(row["billing"]) if "billing" in keys and row["billing"] else None,
     )
+
+
+_MIGRATIONS = [
+    "ALTER TABLE payments ADD COLUMN shipping TEXT",
+    "ALTER TABLE payments ADD COLUMN billing TEXT",
+]
 
 
 class PaymentStore:
@@ -74,6 +86,17 @@ class PaymentStore:
         self._conn.row_factory = sqlite3.Row
         self._lock = threading.Lock()
         self._conn.executescript(_SCHEMA)
+        self._migrate()
+
+    def _migrate(self) -> None:
+        existing = {row[1] for row in self._conn.execute("PRAGMA table_info(payments)")}
+        for stmt in _MIGRATIONS:
+            col = stmt.split()[-2]
+            if col not in existing:
+                try:
+                    self._conn.execute(stmt)
+                except Exception:
+                    pass
 
     def allocate_and_create_payment(
         self,
@@ -82,6 +105,8 @@ class PaymentStore:
         amount_sat: Optional[int],
         label: Optional[str],
         expires_at: Optional[datetime],
+        shipping: Optional[dict[str, Any]] = None,
+        billing: Optional[dict[str, Any]] = None,
     ) -> Invoice:
         """Atomically allocate the next xpub index, derive the address, and insert the payment.
 
@@ -112,10 +137,13 @@ class PaymentStore:
             self._conn.execute(
                 """INSERT INTO payments
                    (id, address, xpub_index, amount_sat, label, status,
-                    created_at, expires_at, received_sat, confirmations, updated_at)
-                   VALUES (?,?,?,?,?,?,?,?,0,0,?)""",
+                    created_at, expires_at, received_sat, confirmations, updated_at,
+                    shipping, billing)
+                   VALUES (?,?,?,?,?,?,?,?,0,0,?,?,?)""",
                 (payment_id, address, idx, amount_sat, label,
-                 PaymentStatus.PENDING.value, now, exp_ts, now),
+                 PaymentStatus.PENDING.value, now, exp_ts, now,
+                 json.dumps(shipping) if shipping else None,
+                 json.dumps(billing) if billing else None),
             )
             self._conn.execute("COMMIT")
         return self.get_payment(payment_id)

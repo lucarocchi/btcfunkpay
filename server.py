@@ -78,6 +78,7 @@ async def lifespan(app: FastAPI):
             f"payment {event.payment_id}: {status} — {event.received_sat} sat"
         )
         if cfg.webhook_url and _safe_webhook_url(cfg.webhook_url) and (event.is_first_detection or event.is_first_confirmation):
+            inv = proc.get_invoice(event.payment_id)
             payload = {
                 "payment_id":    event.payment_id,
                 "label":         event.label,
@@ -87,6 +88,10 @@ async def lifespan(app: FastAPI):
                 "address":       event.address,
                 "confirmations": event.confirmations,
             }
+            if inv and inv.shipping:
+                payload["shipping"] = inv.shipping
+            if inv and inv.billing:
+                payload["billing"] = inv.billing
             try:
                 async with httpx.AsyncClient(timeout=10) as c:
                     await c.post(cfg.webhook_url, json=payload)
@@ -180,16 +185,47 @@ async def prices(request: Request):
     return data
 
 
+class ShippingInfo(BaseModel):
+    firstName: str = Field("", max_length=128)
+    lastName: str = Field("", max_length=128)
+    email: str = Field("", max_length=256)
+    phone: str = Field("", max_length=64)
+    address1: str = Field("", max_length=256)
+    address2: str = Field("", max_length=256)
+    city: str = Field("", max_length=128)
+    state: str = Field("", max_length=128)
+    zip: str = Field("", max_length=32)
+    country: str = Field("", max_length=64)
+
+
+class BillingInfo(BaseModel):
+    sameAsShipping: bool = True
+    company: str = Field("", max_length=256)
+    vatId: str = Field("", max_length=64)
+    firstName: str = Field("", max_length=128)
+    lastName: str = Field("", max_length=128)
+    email: str = Field("", max_length=256)
+    address1: str = Field("", max_length=256)
+    city: str = Field("", max_length=128)
+    zip: str = Field("", max_length=32)
+    country: str = Field("", max_length=64)
+
+
 class InvoiceRequest(BaseModel):
     amount_sat: int | None = Field(None, ge=1000, le=2_100_000_000_000_000)
     label: str | None = Field(None, max_length=256)
+    shipping: ShippingInfo | None = None
+    billing: BillingInfo | None = None
 
 
 @app.post("/invoices")
 @_limiter.limit("20/minute")
 def create_invoice(req: InvoiceRequest, request: Request):
     inv = request.app.state.proc.create_invoice(
-        amount_sat=req.amount_sat, label=req.label
+        amount_sat=req.amount_sat,
+        label=req.label,
+        shipping=req.shipping.model_dump() if req.shipping else None,
+        billing=req.billing.model_dump() if req.billing else None,
     )
     return {
         "payment_id": inv.payment_id,

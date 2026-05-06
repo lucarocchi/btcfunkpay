@@ -4,7 +4,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import urlencode
 
 
@@ -30,6 +30,8 @@ class Invoice:
     received_sat: int
     confirmations: int
     confirmed_at: Optional[datetime]
+    shipping: Optional[dict[str, Any]] = None
+    billing: Optional[dict[str, Any]] = None
 
     @property
     def bip21_uri(self) -> str:
