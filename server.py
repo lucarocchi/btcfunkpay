@@ -146,7 +146,12 @@ app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 # --------------------------------------------------------------------------- #
 
 @app.get("/")
-def root():
+def root(request: Request):
+    host = request.headers.get("host", "").split(":")[0]
+    if host == "funkpay.dev":
+        from fastapi.responses import HTMLResponse
+        path = _STATIC_DIR / "funkpay-landing.html"
+        return HTMLResponse(path.read_text())
     return {"service": "btcfunkpay", "version": "1.0"}
 
 
