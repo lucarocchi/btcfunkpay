@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FunkPay — Self-custodial Bitcoin payments</title>
+  <meta name="description" content="FunkPay is an open-source Bitcoin payment ecosystem. Embeddable widget, AI agent wallet, merchant server. Your keys, your node, your coins.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
+    a { color: #f7931a; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code { font-family: 'SF Mono', 'Fira Code', monospace; background: #1a1d27; border: 1px solid #2d3048; border-radius: 4px; padding: 2px 6px; font-size: 0.85em; color: #94a3b8; }
+
+    header { text-align: center; padding: 80px 24px 64px; border-bottom: 1px solid #2d3048; }
+    header .logo { font-size: 3rem; font-weight: 800; color: #f7931a; letter-spacing: -0.02em; }
+    header .tagline { font-size: 1.3rem; color: #94a3b8; margin-top: 12px; }
+    header .sub { font-size: 1rem; color: #64748b; margin-top: 8px; max-width: 540px; margin-left: auto; margin-right: auto; }
+
+    .section { max-width: 900px; margin: 0 auto; padding: 64px 24px; border-bottom: 1px solid #2d3048; }
+    .section h2 { font-size: 1.4rem; font-weight: 700; color: #f7931a; margin-bottom: 10px; }
+    .section > p { color: #94a3b8; font-size: 1rem; max-width: 680px; margin-bottom: 28px; }
+
+    /* Security banner */
+    .security-banner { background: #0a0f1a; border: 1px solid #f7931a33; border-radius: 12px; padding: 32px 36px; max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; }
+    .sec-item strong { display: block; font-size: 0.9rem; color: #f7931a; margin-bottom: 4px; }
+    .sec-item span { font-size: 0.82rem; color: #64748b; line-height: 1.5; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .card { background: #1a1d27; border: 1px solid #2d3048; border-radius: 10px; padding: 24px; }
+    .card h3 { font-size: 1rem; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
+    .card .label { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 4px; margin-bottom: 10px; }
+    .card .label.orange { background: #f7931a22; color: #f7931a; border: 1px solid #f7931a44; }
+    .card .label.blue   { background: #3b82f622; color: #60a5fa; border: 1px solid #3b82f644; }
+    .card .label.green  { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e44; }
+    .card p  { font-size: 0.875rem; color: #64748b; line-height: 1.6; }
+    .card a  { display: inline-block; margin-top: 14px; font-size: 0.82rem; color: #f7931a; }
+
+    /* Steps */
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    .step { background: #1a1d27; border: 1px solid #2d3048; border-radius: 10px; padding: 24px; }
+    .step-num { font-size: 1.5rem; font-weight: 800; color: #f7931a; margin-bottom: 8px; }
+    .step h3 { font-size: 0.95rem; font-weight: 600; color: #e2e8f0; margin-bottom: 6px; }
+    .step p  { font-size: 0.82rem; color: #64748b; line-height: 1.5; }
+
+    /* Arch diagram */
+    .arch { background: #0f1117; border: 1px solid #2d3048; border-radius: 10px; padding: 28px 32px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.8rem; color: #64748b; line-height: 2; overflow-x: auto; }
+    .arch .hl { color: #f7931a; }
+    .arch .dim { color: #334155; }
+
+    /* Use cases tabs */
+    .use-cases { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .use-case { background: #1a1d27; border: 1px solid #2d3048; border-radius: 10px; padding: 28px; }
+    .use-case h3 { font-size: 1.05rem; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; }
+    .use-case .uc-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; margin-bottom: 14px; display: block; }
+    .use-case p { font-size: 0.875rem; color: #64748b; line-height: 1.6; margin-bottom: 12px; }
+    .use-case code { display: block; margin-top: 8px; padding: 10px 14px; font-size: 0.78rem; line-height: 1.7; background: #0f1117; border: 1px solid #2d3048; border-radius: 6px; color: #94a3b8; }
+
+    .links { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 28px; }
+    .btn { display: inline-block; padding: 10px 22px; border: 1px solid #f7931a55; border-radius: 6px; color: #f7931a; font-size: 0.875rem; font-weight: 600; }
+    .btn:hover { background: #f7931a11; text-decoration: none; }
+    .btn.secondary { border-color: #2d3048; color: #94a3b8; }
+    .btn.secondary:hover { background: #1a1d27; }
+
+    footer { text-align: center; padding: 36px 24px; color: #334155; font-size: 0.82rem; border-top: 1px solid #2d3048; }
+    footer a { color: #475569; }
+    footer a:hover { color: #94a3b8; }
+
+    @media (max-width: 640px) {
+      .steps, .cards, .use-cases { grid-template-columns: 1fr; }
+      .security-banner { grid-template-columns: 1fr; }
+      header .logo { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">FunkPay</div>
+  <p class="tagline">Self-custodial Bitcoin payments — for websites and AI agents</p>
+  <p class="sub">Open-source infrastructure. Your keys, your node, your coins. No third party ever touches your funds.</p>
+</header>
+
+<!-- Security guarantee -->
+<div style="max-width:900px;margin:48px auto 0;padding:0 24px;">
+  <div class="security-banner">
+    <div class="sec-item">
+      <strong>🔑 Your keys only</strong>
+      <span>Private keys are generated and stored locally on the payer's machine. FunkPay never has access to them — not even for a millisecond.</span>
+    </div>
+    <div class="sec-item">
+      <strong>⛓ Your own Bitcoin node</strong>
+      <span>FunkPayAI runs a full local Bitcoin Core node. No third-party node service, no API key, no external dependency for transaction broadcasting.</span>
+    </div>
+    <div class="sec-item">
+      <strong>🏦 Zero custody</strong>
+      <span>Funds go directly on-chain from payer to payee. No escrow, no intermediary wallet, no wrapping. Pure Bitcoin.</span>
+    </div>
+    <div class="sec-item">
+      <strong>🛡 Your own merchant server</strong>
+      <span>btcfunkpay runs on your infrastructure. Payment data, webhooks, and order logic stay on your server — never shared.</span>
+    </div>
+  </div>
+</div>
+
+<!-- Use cases -->
+<div class="section" style="border-bottom:1px solid #2d3048; margin-top:48px;">
+  <h2>Two ways to use FunkPay</h2>
+  <p>FunkPay works both as an embeddable checkout widget for any website, and as an autonomous payment tool for AI agents.</p>
+  <div class="use-cases">
+    <div class="use-case">
+      <span class="uc-label">Web payments</span>
+      <h3>Embeddable checkout widget</h3>
+      <p>Add one <code>&lt;script&gt;</code> tag to your website. FunkPay renders a checkout UI, monitors the Bitcoin address, and fires a webhook to your server when payment is confirmed.</p>
+      <p>Works on any site — static HTML, React, Shopify, WordPress. No plugin required. Shadow DOM isolation keeps styles clean.</p>
+      <code>&lt;div id="funkpay"
+  data-server="https://your-server.com/pay"
+  data-amount="25.00"
+  data-currency="USD"&gt;&lt;/div&gt;
+&lt;script src="https://btcfunk.com/pay/funkpay.js"&gt;&lt;/script&gt;</code>
+      <a href="https://github.com/lucarocchi/btcfunkpay">btcfunkpay server →</a>
+    </div>
+    <div class="use-case">
+      <span class="uc-label">AI agent payments</span>
+      <h3>MCP wallet for Claude &amp; agents</h3>
+      <p>FunkPayAI exposes a Model Context Protocol server that Claude Code and other MCP-compatible agents use to pay in Bitcoin autonomously — no human intervention required per transaction.</p>
+      <p>Configure approval rules: always ask, never ask, or ask above a threshold. The agent operates within your limits.</p>
+      <code>{
+  "mcpServers": {
+    "funkpayai": {
+      "command": "node",
+      "args": ["~/.funkpay/mcp-stdio.mjs"]
+    }
+  }
+}</code>
+      <a href="https://github.com/lucarocchi/funkpayai">FunkPayAI wallet →</a>
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<div class="section">
+  <h2>How it works</h2>
+  <p>FunkPay connects two sides: a payer wallet (FunkPayAI) and a merchant server (btcfunkpay). Both run on self-hosted infrastructure — no shared service in the middle.</p>
+  <div class="steps" style="margin-bottom:40px;">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Invoice created</h3>
+      <p>The merchant server generates a Bitcoin address and a BIP-21 payment URI. The widget or AI agent receives it.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Payment broadcast</h3>
+      <p>FunkPayAI signs the transaction with the local keys and broadcasts it via the local Bitcoin Core node. Keys never leave the machine.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>On-chain detection</h3>
+      <p>The merchant server monitors the Bitcoin network. It fires your webhook instantly on mempool detection, and again on each confirmation milestone.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h3>Order fulfilled</h3>
+      <p>Your backend receives the webhook and completes the order — ship goods, unlock content, or trigger any server-side action.</p>
+    </div>
+  </div>
+
+  <!-- Architecture diagram -->
+  <div class="arch">
+<span class="hl">Claude Code / AI agent</span>        <span class="dim">any MCP-compatible client</span>
+    │  MCP stdio / HTTP
+    ▼
+<span class="hl">FunkPayAI</span>  (Electron desktop app)    <span class="dim">~/.funkpay/mcp-stdio.mjs proxy</span>
+    │  JSON-RPC
+    ▼
+<span class="hl">Bitcoin Core</span>  (local node, pruned)    <span class="dim">keys stay on device</span>
+    │  broadcast
+    ▼
+<span class="hl">Bitcoin network</span>
+    │  on-chain tx
+    ▼
+<span class="hl">btcfunkpay</span>  (your merchant server)   <span class="dim">REST API + webhook engine</span>
+    │  webhook POST
+    ▼
+<span class="hl">Your backend</span>  →  fulfill order
+    │
+    └──  <span class="hl">funkpay.js widget</span>  ←  customer browser
+  </div>
+</div>
+
+<!-- Ecosystem -->
+<div class="section">
+  <h2>Ecosystem components</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="label orange">Payer side</div>
+      <h3>FunkPayAI</h3>
+      <p>Electron desktop app for macOS, Windows, Linux. Runs a local Bitcoin Core node (pruned, ~10 GB). Exposes a stdio MCP proxy and a REST API on localhost. Approval policy configurable: always ask, threshold, never ask.</p>
+      <a href="https://github.com/lucarocchi/funkpayai">github →</a>
+    </div>
+    <div class="card">
+      <div class="label blue">Merchant side</div>
+      <h3>btcfunkpay</h3>
+      <p>Python/FastAPI server you self-host. Generates addresses, monitors the mempool and confirmed blocks, fires webhooks on payment events. Includes <code>funkpay.js</code> — a drop-in checkout widget with multi-currency fiat display and QR code.</p>
+      <a href="https://github.com/lucarocchi/btcfunkpay">github →</a>
+    </div>
+    <div class="card">
+      <div class="label green">Protocol</div>
+      <h3>MCP tools</h3>
+      <p>FunkPayAI exposes 10 MCP tools: <code>get_balance</code>, <code>send_payment</code>, <code>create_invoice</code>, <code>get_invoice_status</code>, <code>wait_for_payment</code>, and more. Works with Claude Code, Cursor, and any MCP-compatible client.</p>
+      <a href="https://modelcontextprotocol.io">MCP spec →</a>
+    </div>
+  </div>
+</div>
+
+<!-- Get started -->
+<div class="section" style="border-bottom:none;">
+  <h2>Get started</h2>
+  <p>Both components are open source and MIT-licensed. Run your own stack or try the testnet demo first.</p>
+  <div class="cards" style="margin-top:0;">
+    <div class="card">
+      <h3>For AI agent payments</h3>
+      <p style="margin-bottom:12px;">Download FunkPayAI, install Bitcoin Core, add the MCP config to Claude. Your agent can start paying in minutes.</p>
+      <a href="https://github.com/lucarocchi/funkpayai" class="btn" style="margin-top:4px;">Download FunkPayAI</a>
+    </div>
+    <div class="card">
+      <h3>For website checkout</h3>
+      <p style="margin-bottom:12px;">Deploy btcfunkpay on your server, add one script tag to your site, configure your webhook endpoint. Done.</p>
+      <a href="https://github.com/lucarocchi/btcfunkpay" class="btn" style="margin-top:4px;">btcfunkpay server</a>
+    </div>
+    <div class="card">
+      <h3>Try testnet demo</h3>
+      <p style="margin-bottom:12px;">No real money. Test the full flow — widget checkout, AI agent purchase, on-chain confirmation — on Bitcoin testnet.</p>
+      <a href="https://shop.funkpay.dev" class="btn" style="margin-top:4px;">Testnet demo →</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  FunkPay — open source, MIT licensed &nbsp;·&nbsp;
+  <a href="https://github.com/lucarocchi">github.com/lucarocchi</a> &nbsp;·&nbsp;
+  <a href="https://btcfunk.com">BTCFunk analytics</a>
+</footer>
+
+</body>
+</html>
