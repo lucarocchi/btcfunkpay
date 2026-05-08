@@ -600,10 +600,14 @@
       var label = opts.label || root.getElementById('reference-input').value.trim() || null;
 
       try {
+        var fiatVal = parseFloat(root.getElementById('amount-fiat').value);
+        var body = { amount_sat: amount_sat, label: label };
+        if (selectedCurrency()) body.currency = selectedCurrency();
+        if (fiatVal > 0) body.amount_fiat = fiatVal;
         var res = await fetch(base + '/invoices', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount_sat: amount_sat, label: label }),
+          body: JSON.stringify(body),
         });
         if (!res.ok) throw new Error(await res.text());
         var data = await res.json();

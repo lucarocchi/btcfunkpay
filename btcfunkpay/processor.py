@@ -109,6 +109,9 @@ class PaymentProcessor:
         expires_in: Optional[int] = None,
         shipping: Optional[dict[str, Any]] = None,
         billing: Optional[dict[str, Any]] = None,
+        amount_fiat: Optional[float] = None,
+        currency: Optional[str] = None,
+        exchange_rate: Optional[float] = None,
     ) -> Invoice:
         expiry_secs = expires_in if expires_in is not None else self._expiry_seconds
         expires_at: Optional[datetime] = None
@@ -119,7 +122,8 @@ class PaymentProcessor:
             return derive_address(self._xpub, change=0, index=index, mainnet=self._mainnet)
 
         return self._store.allocate_and_create_payment(
-            self._xpub, _derive, amount_sat, label, expires_at, shipping, billing
+            self._xpub, _derive, amount_sat, label, expires_at, shipping, billing,
+            amount_fiat=amount_fiat, currency=currency, exchange_rate=exchange_rate,
         )
 
     def get_invoice(self, payment_id: str) -> Optional[Invoice]:

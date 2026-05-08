@@ -224,28 +224,64 @@ class BillingInfo(BaseModel):
     country: str = Field("", max_length=64)
 
 
+_SUPPORTED_CURRENCIES = {"USD", "EUR", "GBP", "JPY", "CAD", "CHF", "AUD"}
+
+
 class InvoiceRequest(BaseModel):
     amount_sat: int | None = Field(None, ge=1000, le=2_100_000_000_000_000)
     label: str | None = Field(None, max_length=256)
     shipping: ShippingInfo | None = None
     billing: BillingInfo | None = None
+    amount_fiat: float | None = Field(None, ge=0)
+    currency: str | None = Field(None, pattern="^(USD|EUR|GBP|JPY|CAD|CHF|AUD)$")
+
+
+async def _resolve_exchange_rate(request: Request, currency: str | None) -> float | None:
+    if not currency:
+        return None
+    cache = request.app.state.price_cache
+    now = time.time()
+    prices_data = None
+    if cache and now - cache["ts"] < 120:
+        prices_data = cache["prices"]
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=5) as client:
+                r = await client.get(
+                    "https://mempool.space/api/v1/prices",
+                    headers={"User-Agent": "btcfunkpay/1.0"},
+                )
+                r.raise_for_status()
+                prices_data = r.json()
+                request.app.state.price_cache = {"prices": prices_data, "ts": now}
+        except Exception:
+            if cache:
+                prices_data = cache["prices"]
+    return prices_data.get(currency.upper()) if prices_data else None
 
 
 @app.post("/invoices")
 @_limiter.limit("20/minute")
-def create_invoice(req: InvoiceRequest, request: Request):
+async def create_invoice(req: InvoiceRequest, request: Request):
+    exchange_rate = await _resolve_exchange_rate(request, req.currency)
     inv = request.app.state.proc.create_invoice(
         amount_sat=req.amount_sat,
         label=req.label,
         shipping=req.shipping.model_dump() if req.shipping else None,
         billing=req.billing.model_dump() if req.billing else None,
+        amount_fiat=req.amount_fiat,
+        currency=req.currency,
+        exchange_rate=exchange_rate,
     )
     return {
-        "payment_id": inv.payment_id,
-        "address":    inv.address,
-        "bip21_uri":  inv.bip21_uri,
-        "amount_sat": inv.amount_sat,
-        "expires_at": inv.expires_at.isoformat() if inv.expires_at else None,
+        "payment_id":   inv.payment_id,
+        "address":      inv.address,
+        "bip21_uri":    inv.bip21_uri,
+        "amount_sat":   inv.amount_sat,
+        "expires_at":   inv.expires_at.isoformat() if inv.expires_at else None,
+        "amount_fiat":  inv.amount_fiat,
+        "currency":     inv.currency,
+        "exchange_rate": inv.exchange_rate,
     }
 
 
@@ -274,6 +310,9 @@ def list_invoices(
             "txid":          inv.txid,
             "created_at":    inv.created_at.isoformat() if inv.created_at else None,
             "confirmed_at":  inv.confirmed_at.isoformat() if inv.confirmed_at else None,
+            "amount_fiat":   inv.amount_fiat,
+            "currency":      inv.currency,
+            "exchange_rate": inv.exchange_rate,
         }
         for inv in invoices
     ]
@@ -291,4 +330,7 @@ def get_invoice(payment_id: str, request: Request):
         "received_sat":  inv.received_sat,
         "confirmations": inv.confirmations,
         "txid":          inv.txid,
+        "amount_fiat":   inv.amount_fiat,
+        "currency":      inv.currency,
+        "exchange_rate": inv.exchange_rate,
     }

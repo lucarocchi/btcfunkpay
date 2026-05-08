@@ -32,6 +32,9 @@ class Invoice:
     confirmed_at: Optional[datetime]
     shipping: Optional[dict[str, Any]] = None
     billing: Optional[dict[str, Any]] = None
+    amount_fiat: Optional[float] = None
+    currency: Optional[str] = None
+    exchange_rate: Optional[float] = None
 
     @property
     def bip21_uri(self) -> str:
