@@ -275,6 +275,7 @@ _SUPPORTED_CURRENCIES = {"USD", "EUR", "GBP", "JPY", "CAD", "CHF", "AUD"}
 class InvoiceRequest(BaseModel):
     amount_sat: int | None = Field(None, ge=1000, le=2_100_000_000_000_000)
     label: str | None = Field(None, max_length=256)
+    sku: str | None = Field(None, max_length=32)
     shipping: ShippingInfo | None = None
     billing: BillingInfo | None = None
     amount_fiat: float | None = Field(None, ge=0)
@@ -308,10 +309,25 @@ async def _resolve_exchange_rate(request: Request, currency: str | None) -> floa
 @app.post("/invoices")
 @_limiter.limit("20/minute")
 async def create_invoice(req: InvoiceRequest, request: Request):
+    amount_sat = req.amount_sat
+    label = req.label
+
+    if req.sku:
+        product = _PRODUCTS.get(req.sku.upper())
+        if product is None:
+            raise HTTPException(status_code=404, detail=f"Product not found: {req.sku}")
+        if amount_sat is not None and amount_sat != product["price_sat"]:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Price mismatch: {req.sku} costs {product['price_sat']} sat, got {amount_sat}"
+            )
+        amount_sat = product["price_sat"]
+        label = label or product["name"]
+
     exchange_rate = await _resolve_exchange_rate(request, req.currency)
     inv = request.app.state.proc.create_invoice(
-        amount_sat=req.amount_sat,
-        label=req.label,
+        amount_sat=amount_sat,
+        label=label,
         shipping=req.shipping.model_dump() if req.shipping else None,
         billing=req.billing.model_dump() if req.billing else None,
         amount_fiat=req.amount_fiat,
@@ -319,13 +335,14 @@ async def create_invoice(req: InvoiceRequest, request: Request):
         exchange_rate=exchange_rate,
     )
     return {
-        "payment_id":   inv.payment_id,
-        "address":      inv.address,
-        "bip21_uri":    inv.bip21_uri,
-        "amount_sat":   inv.amount_sat,
-        "expires_at":   inv.expires_at.isoformat() if inv.expires_at else None,
-        "amount_fiat":  inv.amount_fiat,
-        "currency":     inv.currency,
+        "payment_id":    inv.payment_id,
+        "address":       inv.address,
+        "bip21_uri":     inv.bip21_uri,
+        "amount_sat":    inv.amount_sat,
+        "expires_at":    inv.expires_at.isoformat() if inv.expires_at else None,
+        "sku":           req.sku.upper() if req.sku else None,
+        "amount_fiat":   inv.amount_fiat,
+        "currency":      inv.currency,
         "exchange_rate": inv.exchange_rate,
     }
 
