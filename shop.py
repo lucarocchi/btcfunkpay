@@ -132,6 +132,18 @@ def get_product(sku: str):
     return _row(row)
 
 
+@app.get("/funkpay/product")
+def funkpay_product(sku: str):
+    """Standard FunkPay catalog contract — called by btcfunkpay to resolve SKU → price."""
+    with _conn() as c:
+        row = c.execute(
+            "SELECT * FROM products WHERE sku=? AND active=1", (sku.upper(),)
+        ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"Product not found: {sku}")
+    return _row(row)
+
+
 # ── Admin helpers ─────────────────────────────────────────────────────────────
 
 async def _save_image(sku: str, image: UploadFile) -> str:

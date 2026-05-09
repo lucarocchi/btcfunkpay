@@ -275,7 +275,7 @@ async def create_invoice(req: InvoiceRequest, request: Request):
         sku_upper = req.sku.upper()
         try:
             async with httpx.AsyncClient(timeout=5) as c:
-                r = await c.get(f"{catalog_url}/products/{sku_upper}")
+                r = await c.get(f"{catalog_url}/funkpay/product", params={"sku": sku_upper})
         except Exception as e:
             raise HTTPException(status_code=502, detail=f"Catalog unreachable: {e}")
         if r.status_code == 404:
