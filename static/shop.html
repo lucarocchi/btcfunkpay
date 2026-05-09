@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FunkPay Test Shop</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 72px 24px 48px;
+    }
+
+    .testnet-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #eab308;
+      color: #000;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px;
+      letter-spacing: 0.08em;
+      z-index: 100;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 11px;
+      color: #475569;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .product-card {
+      background: #1a1d27;
+      border: 1px solid #2d3048;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .product-img {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: #0f1117;
+      border: 1px solid #2d3048;
+    }
+
+    .product-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      background: #0f1117;
+      border: 1px solid #2d3048;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .product-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .product-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 4px;
+    }
+
+    .product-desc {
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .product-price {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f7931a;
+    }
+
+    .product-price .sat-label {
+      font-weight: 400;
+      color: #94a3b8;
+      margin-left: 2px;
+    }
+
+    .btn-buy {
+      background: #f7931a;
+      color: #000;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: opacity .15s;
+    }
+    .btn-buy:hover { opacity: .85; }
+
+    .hint {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 12px;
+      color: #334155;
+    }
+    .hint a { color: #f7931a; text-decoration: none; }
+
+    .loading {
+      text-align: center;
+      color: #475569;
+      font-size: 13px;
+      padding: 40px 0;
+    }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #1a1d27;
+      border: 1px solid #2d3048;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 420px;
+      margin: 16px;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      background: none;
+      border: 1px solid #2d3048;
+      color: #94a3b8;
+      border-radius: 6px;
+      width: 28px; height: 28px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-product-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      padding-right: 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="testnet-bar">⚠ TESTNET — This is a demo. No real Bitcoin.</div>
+
+  <div class="container">
+    <h1>FunkPay Test Shop</h1>
+    <div class="product-list" id="product-list">
+      <div class="loading">Loading products…</div>
+    </div>
+    <p class="hint">Powered by <a href="https://funkpay.dev">FunkPay</a> · testnet demo</p>
+  </div>
+
+  <!-- Payment modal -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close">✕</button>
+      <div class="modal-product-name" id="modal-title"></div>
+      <div id="modal-widget"></div>
+    </div>
+  </div>
+
+  <script>
+    const ICONS = { 'FUNK-001': '🎨', 'FUNK-002': '🔑', 'FUNK-003': '👕' }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+    }
+
+    // Load products
+    fetch('/products')
+      .then(r => r.json())
+      .then(products => {
+        const list = document.getElementById('product-list')
+        if (!products.length) {
+          list.innerHTML = '<div class="loading">No products available.</div>'
+          return
+        }
+        list.innerHTML = products.map(p => {
+          const thumb = p.image
+            ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.name)}">`
+            : `<div class="product-icon">${ICONS[p.sku] || '📦'}</div>`
+          return `
+            <div class="product-card">
+              ${thumb}
+              <div class="product-body">
+                <div class="product-name">${esc(p.name)}</div>
+                <div class="product-desc">${esc(p.description)}</div>
+                <div class="product-price">
+                  ${Number(p.price_sat).toLocaleString()}
+                  <span class="sat-label">sat</span>
+                </div>
+              </div>
+              <button class="btn-buy"
+                data-sku="${esc(p.sku)}"
+                data-name="${esc(p.name)}"
+                data-sat="${p.price_sat}">Pay with Bitcoin</button>
+            </div>`
+        }).join('')
+
+        list.querySelectorAll('.btn-buy').forEach(btn => {
+          btn.addEventListener('click', () => {
+            openPayment(btn.dataset.sku, btn.dataset.name, parseInt(btn.dataset.sat))
+          })
+        })
+      })
+      .catch(() => {
+        document.getElementById('product-list').innerHTML =
+          '<div class="loading">Could not load products.</div>'
+      })
+
+    // Payment modal
+    function openPayment(sku, name, priceSat) {
+      document.getElementById('modal-title').textContent = name
+
+      const widget = document.getElementById('modal-widget')
+      widget.innerHTML = ''
+
+      const div = document.createElement('div')
+      div.id = 'funkpay'
+      div.dataset.server = 'https://shop.funkpay.dev'
+      div.dataset.amount = priceSat
+      div.dataset.label = `${name} (${sku})`
+      div.dataset.theme = 'dark'
+      widget.appendChild(div)
+
+      // Inject fresh script — funkpay.js checks readyState and calls _auto() immediately
+      // since the page is already loaded. Cache-bust to force re-execution.
+      const s = document.createElement('script')
+      s.src = '/static/funkpay.js?v=' + Date.now()
+      widget.appendChild(s)
+
+      document.getElementById('modal').classList.add('open')
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open')
+      document.getElementById('modal-widget').innerHTML = ''
+    }
+
+    document.getElementById('modal-close').addEventListener('click', closeModal)
+    document.getElementById('modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('modal')) closeModal()
+    })
+  </script>
+</body>
+</html>
