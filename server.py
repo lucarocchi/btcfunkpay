@@ -318,6 +318,87 @@ def list_invoices(
     ]
 
 
+@app.get("/invoice")
+def invoice_admin_page(
+    request: Request,
+    status: str | None = Query(None, pattern=_STATUS_PATTERN),
+    _: HTTPBasicCredentials = Depends(_require_admin),
+):
+    from fastapi.responses import HTMLResponse
+    invoices = request.app.state.proc.list_invoices(status=status, limit=200, offset=0)
+
+    status_colors = {
+        "confirmed": "#22c55e",
+        "overpaid":  "#22c55e",
+        "detected":  "#f7931a",
+        "pending":   "#aaaaaa",
+        "expired":   "#ef4444",
+    }
+
+    rows = ""
+    for inv in invoices:
+        color = status_colors.get(inv.status.value, "#aaaaaa")
+        created = (inv.created_at.isoformat() if inv.created_at else "")[:16].replace("T", " ")
+        confirmed = (inv.confirmed_at.isoformat() if inv.confirmed_at else "—")[:16].replace("T", " ")
+        amount = str(inv.amount_sat) if inv.amount_sat else "—"
+        received = inv.received_sat or 0
+        txid = inv.txid or "—"
+        txid_short = txid[:12] + "…" if txid != "—" else "—"
+        pid = inv.payment_id or "—"
+        pid_short = pid[:8] + "…" if pid != "—" else "—"
+        fiat = f"{inv.amount_fiat} {inv.currency}" if inv.amount_fiat and inv.currency else "—"
+        rate = f"{inv.exchange_rate:,.0f}" if inv.exchange_rate else "—"
+        rows += f"""
+        <tr>
+          <td style="color:#aaa;font-size:11px">{created}</td>
+          <td style="font-family:monospace;font-size:11px;color:#aaa" title="{pid}">{pid_short}</td>
+          <td>{inv.label or "—"}</td>
+          <td style="text-align:right">{amount}</td>
+          <td style="text-align:right;color:#22c55e">{received}</td>
+          <td style="text-align:right;color:#94a3b8">{fiat}</td>
+          <td style="text-align:right;color:#64748b;font-size:11px">{rate}</td>
+          <td><span style="color:{color};font-weight:600">{inv.status.value}</span></td>
+          <td style="font-family:monospace;font-size:11px" title="{txid}">{txid_short}</td>
+          <td style="color:#aaa;font-size:11px">{confirmed}</td>
+        </tr>"""
+
+    filters = " ".join(
+        f'<a href="/invoice?status={s}" style="padding:4px 10px;border-radius:4px;font-size:12px;text-decoration:none;background:{"#333" if status == s else "#1a1a1a"};color:{c}">{s}</a>'
+        for s, c in status_colors.items()
+    )
+
+    html = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>FunkPay Invoices — shop.funkpay.dev</title>
+<style>
+  body {{ font-family: sans-serif; background: #0f0f0f; color: #eee; padding: 2rem; }}
+  h1 {{ font-size: 1.2rem; margin-bottom: 1rem; }}
+  .filters {{ display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+  th {{ text-align: left; color: #666; font-weight: 600; font-size: 11px; text-transform: uppercase; padding: 6px 8px; border-bottom: 1px solid #222; }}
+  td {{ padding: 8px; border-bottom: 1px solid #1a1a1a; vertical-align: middle; }}
+  tr:hover td {{ background: #1a1a1a; }}
+</style>
+</head><body>
+  <h1 style="color:#f7931a">shop.funkpay.dev — Invoices ({len(invoices)})</h1>
+  <div class="filters">
+    <a href="/invoice" style="padding:4px 10px;border-radius:4px;font-size:12px;text-decoration:none;background:{"#333" if not status else "#1a1a1a"};color:#eee">all</a>
+    {filters}
+  </div>
+  <table>
+    <thead><tr>
+      <th>Created</th><th>ID</th><th>Label</th>
+      <th style="text-align:right">Amount (sat)</th>
+      <th style="text-align:right">Received (sat)</th>
+      <th style="text-align:right">Fiat</th>
+      <th style="text-align:right">Rate</th>
+      <th>Status</th><th>TxID</th><th>Confirmed</th>
+    </tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+</body></html>"""
+    return HTMLResponse(html)
+
+
 @app.get("/invoices/{payment_id}")
 def get_invoice(payment_id: str, request: Request):
     inv = request.app.state.proc.get_invoice(payment_id)
