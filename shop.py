@@ -141,11 +141,16 @@ tr:hover td{background:#1a1d27}
 .badge-product{background:#1e3a5f33;color:#60a5fa;border:1px solid #60a5fa44}
 .badge-sub{background:#14532d33;color:#22c55e;border:1px solid #22c55e44}
 .thumb{width:36px;height:36px;object-fit:cover;border-radius:4px}
-.no-thumb{width:36px;height:36px;background:#1a1d27;border-radius:4px;display:inline-block}"""
+.no-thumb{width:36px;height:36px;background:#1a1d27;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:1.2rem}"""
 
+    _ICONS = {"FUNK-001": "🎨", "FUNK-002": "🔑", "FUNK-003": "👕"}
     rows = ""
     for p in products:
-        thumb = f'<img class="thumb" src="{p["image"]}" onerror="this.style.visibility=\'hidden\'">' if p["image"] else '<span class="no-thumb"></span>'
+        if p["image"]:
+            thumb = f'<img class="thumb" src="{p["image"]}" onerror="this.style.visibility=\'hidden\'">'
+        else:
+            icon = _ICONS.get(p["sku"], "📦")
+            thumb = f'<span class="no-thumb">{icon}</span>'
         badge_cls = "badge-sub" if p["type"] == "subscription" else "badge-product"
         rows += f"""<tr>
           <td>{thumb}</td>
