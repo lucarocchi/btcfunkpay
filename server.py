@@ -8,6 +8,7 @@ Usage:
 
 import logging
 import secrets
+import sqlite3
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -142,38 +143,6 @@ app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
 
 # --------------------------------------------------------------------------- #
-#  Product catalogue (merchant-side, shop.funkpay.dev only)                   #
-# --------------------------------------------------------------------------- #
-
-_PRODUCTS = {
-    "FUNK-001": {
-        "sku":         "FUNK-001",
-        "name":        "FunkPay Sticker Pack",
-        "description": "3 vinyl stickers — FunkPay, Bitcoin, AI Agent logos.",
-        "price_sat":   5_000,
-        "currency":    "sat",
-        "type":        "product",
-    },
-    "FUNK-002": {
-        "sku":         "FUNK-002",
-        "name":        "Monthly Dev Access",
-        "description": "One month of access to the FunkPay developer sandbox and testnet API.",
-        "price_sat":   50_000,
-        "currency":    "sat",
-        "type":        "subscription",
-    },
-    "FUNK-003": {
-        "sku":         "FUNK-003",
-        "name":        "FunkPay T-Shirt",
-        "description": "100% cotton T-shirt, orange print on black. Sizes S–XXL.",
-        "price_sat":   150_000,
-        "currency":    "sat",
-        "type":        "product",
-    },
-}
-
-
-# --------------------------------------------------------------------------- #
 #  Routes                                                                      #
 # --------------------------------------------------------------------------- #
 
@@ -185,19 +154,6 @@ def root(request: Request):
         path = _STATIC_DIR / "funkpay-landing.html"
         return HTMLResponse(path.read_text())
     return {"service": "btcfunkpay", "version": "1.0"}
-
-
-@app.get("/products")
-def list_products():
-    return list(_PRODUCTS.values())
-
-
-@app.get("/products/{sku}")
-def get_product(sku: str):
-    product = _PRODUCTS.get(sku.upper())
-    if product is None:
-        raise HTTPException(status_code=404, detail=f"Product not found: {sku}")
-    return product
 
 
 @app.get("/.well-known/funkpay.json")
@@ -313,16 +269,30 @@ async def create_invoice(req: InvoiceRequest, request: Request):
     label = req.label
 
     if req.sku:
-        product = _PRODUCTS.get(req.sku.upper())
-        if product is None:
+        catalog_url = cfg.catalog_url.rstrip("/") if cfg.catalog_url else None
+        if not catalog_url:
+            raise HTTPException(status_code=422, detail="catalog_url not configured on this server")
+        sku_upper = req.sku.upper()
+        try:
+            async with httpx.AsyncClient(timeout=5) as c:
+                r = await c.get(f"{catalog_url}/products/{sku_upper}")
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"Catalog unreachable: {e}")
+        if r.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Product not found: {req.sku}")
-        if amount_sat is not None and amount_sat != product["price_sat"]:
+        if r.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"Catalog error: HTTP {r.status_code}")
+        product = r.json()
+        catalog_price = product.get("price_sat")
+        if catalog_price is None:
+            raise HTTPException(status_code=502, detail="Catalog response missing price_sat")
+        if amount_sat is not None and amount_sat != catalog_price:
             raise HTTPException(
                 status_code=422,
-                detail=f"Price mismatch: {req.sku} costs {product['price_sat']} sat, got {amount_sat}"
+                detail=f"Price mismatch: {sku_upper} costs {catalog_price} sat, got {amount_sat}"
             )
-        amount_sat = product["price_sat"]
-        label = label or product["name"]
+        amount_sat = catalog_price
+        label = label or product.get("name", sku_upper)
 
     exchange_rate = await _resolve_exchange_rate(request, req.currency)
     inv = request.app.state.proc.create_invoice(

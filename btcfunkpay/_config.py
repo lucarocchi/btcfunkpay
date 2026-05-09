@@ -25,6 +25,7 @@ _DEFAULTS = {
         "port": "8001",
         "public_url": "",   # e.g. https://btcfunk.com/pay — used in well-known discovery
         "name": "",         # display name, e.g. "btcfunk.com"
+        "catalog_url": "",  # e.g. http://127.0.0.1:8003 — merchant catalog service
     },
     "notifications": {
         "webhook_url": "",
@@ -53,6 +54,7 @@ _ENV_MAP = {
     "BTCFUNKPAY_PORT":                    ("server",   "port"),
     "BTCFUNKPAY_PUBLIC_URL":              ("server",   "public_url"),
     "BTCFUNKPAY_NAME":                    ("server",   "name"),
+    "BTCFUNKPAY_CATALOG_URL":             ("server",        "catalog_url"),
     "BTCFUNKPAY_WEBHOOK_URL":             ("notifications", "webhook_url"),
     "BTCFUNKPAY_ALLOWED_ORIGINS":         ("cors",          "allowed_origins"),
     "BTCFUNKPAY_ADMIN_USERNAME":          ("admin",         "username"),
@@ -135,6 +137,10 @@ class Config:
     @property
     def name(self) -> str:
         return self._cp.get("server", "name", fallback="")
+
+    @property
+    def catalog_url(self) -> str:
+        return self._cp.get("server", "catalog_url", fallback="")
 
     # notifications
     @property
