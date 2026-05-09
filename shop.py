@@ -25,7 +25,7 @@ import secrets
 import sqlite3
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
@@ -112,13 +112,76 @@ def _require_admin(creds: HTTPBasicCredentials = Depends(_http_basic)):
 
 # ── Public catalog API ────────────────────────────────────────────────────────
 
+def _render_products_html(products: list[dict]) -> str:
+    _NAV = """
+<div class="testnet-bar">⚠ TESTNET — This is a demo. No real Bitcoin.</div>
+<nav class="nav">
+  <span class="nav-brand">FunkPay</span>
+  <a href="/" class="nav-link">Home</a>
+  <a href="/products" class="nav-link active">Products</a>
+</nav>"""
+    _CSS = """
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e2e8f0;padding-top:96px}
+.testnet-bar{position:fixed;top:0;left:0;right:0;background:#eab308;color:#000;text-align:center;font-size:12px;font-weight:700;padding:5px;letter-spacing:.08em;z-index:100}
+.nav{position:fixed;top:27px;left:0;right:0;height:44px;background:#0f1117;border-bottom:1px solid #1e2235;display:flex;align-items:center;padding:0 24px;gap:4px;z-index:90}
+.nav-brand{font-size:14px;font-weight:700;color:#f7931a;margin-right:16px}
+.nav-link{font-size:13px;color:#64748b;text-decoration:none;padding:5px 10px;border-radius:6px}
+.nav-link:hover{color:#e2e8f0}
+.nav-link.active{color:#e2e8f0;background:#1a1d27}
+.container{max-width:900px;margin:0 auto;padding:40px 24px 64px}
+h1{font-size:18px;font-weight:700;color:#e2e8f0;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:#475569;font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;border-bottom:1px solid #1e2235}
+td{padding:10px 12px;border-bottom:1px solid #1a1d27;vertical-align:middle}
+tr:hover td{background:#1a1d27}
+.sku{font-family:monospace;font-size:12px;color:#64748b}
+.price{color:#f7931a;font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-product{background:#1e3a5f33;color:#60a5fa;border:1px solid #60a5fa44}
+.badge-sub{background:#14532d33;color:#22c55e;border:1px solid #22c55e44}
+.thumb{width:36px;height:36px;object-fit:cover;border-radius:4px}
+.no-thumb{width:36px;height:36px;background:#1a1d27;border-radius:4px;display:inline-block}"""
+
+    rows = ""
+    for p in products:
+        thumb = f'<img class="thumb" src="{p["image"]}" onerror="this.style.visibility=\'hidden\'">' if p["image"] else '<span class="no-thumb"></span>'
+        badge_cls = "badge-sub" if p["type"] == "subscription" else "badge-product"
+        rows += f"""<tr>
+          <td>{thumb}</td>
+          <td class="sku">{p["sku"]}</td>
+          <td>{p["name"]}</td>
+          <td style="color:#94a3b8;font-size:12px;max-width:280px">{p["description"]}</td>
+          <td class="price">{p["price_sat"]:,} <span style="font-weight:400;color:#64748b;font-size:11px">sat</span></td>
+          <td><span class="badge {badge_cls}">{p["type"]}</span></td>
+        </tr>"""
+
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Products — FunkPay Test Shop</title>
+<style>{_CSS}</style></head>
+<body>
+{_NAV}
+<div class="container">
+  <h1>Products ({len(products)})</h1>
+  <table>
+    <thead><tr><th></th><th>SKU</th><th>Name</th><th>Description</th><th>Price</th><th>Type</th></tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+</div>
+</body></html>"""
+
+
 @app.get("/products")
-def list_products():
+def list_products(request: Request):
     with _conn() as c:
         rows = c.execute(
             "SELECT * FROM products WHERE active=1 ORDER BY created_at"
         ).fetchall()
-    return [_row(r) for r in rows]
+    products = [_row(r) for r in rows]
+    if "text/html" in request.headers.get("accept", ""):
+        return HTMLResponse(_render_products_html(products))
+    return products
 
 
 @app.get("/products/{sku}")

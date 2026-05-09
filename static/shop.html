@@ -13,9 +13,10 @@
       background: #0f1117;
       color: #e2e8f0;
       min-height: 100vh;
-      padding: 72px 24px 48px;
+      padding-top: 96px;
     }
 
+    /* ── Testnet bar ── */
     .testnet-bar {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -24,32 +25,129 @@
       text-align: center;
       font-size: 12px;
       font-weight: 700;
-      padding: 6px;
+      padding: 5px;
       letter-spacing: 0.08em;
       z-index: 100;
     }
 
+    /* ── Nav ── */
+    .nav {
+      position: fixed;
+      top: 27px; left: 0; right: 0;
+      height: 44px;
+      background: #0f1117;
+      border-bottom: 1px solid #1e2235;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 4px;
+      z-index: 90;
+    }
+    .nav-brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f7931a;
+      margin-right: 16px;
+    }
+    .nav-link {
+      font-size: 13px;
+      color: #64748b;
+      text-decoration: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      transition: color .15s;
+    }
+    .nav-link:hover { color: #e2e8f0; }
+    .nav-link.active { color: #e2e8f0; background: #1a1d27; }
+
+    /* ── Layout ── */
     .container {
-      max-width: 680px;
+      max-width: 720px;
       margin: 0 auto;
+      padding: 40px 24px 64px;
     }
 
-    h1 {
+    /* ── Hero ── */
+    .hero {
+      margin-bottom: 48px;
+    }
+    .hero-tag {
+      display: inline-block;
       font-size: 11px;
-      color: #475569;
-      font-weight: 600;
-      letter-spacing: 0.12em;
+      font-weight: 700;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin-bottom: 28px;
-      text-align: center;
+      color: #f7931a;
+      background: #f7931a18;
+      border: 1px solid #f7931a33;
+      border-radius: 4px;
+      padding: 3px 8px;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .hero p {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.7;
+      max-width: 580px;
+      margin-bottom: 20px;
     }
 
+    .flow-box {
+      background: #1a1d27;
+      border: 1px solid #2d3048;
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: #64748b;
+      line-height: 1.9;
+      margin-bottom: 20px;
+    }
+    .flow-box .kw { color: #f7931a; }
+    .flow-box .str { color: #22c55e; }
+
+    .links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #94a3b8;
+      text-decoration: none;
+      border: 1px solid #2d3048;
+      border-radius: 6px;
+      padding: 6px 12px;
+      transition: border-color .15s, color .15s;
+    }
+    .link-btn:hover { color: #e2e8f0; border-color: #475569; }
+
+    /* ── Section header ── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 16px;
+    }
+
+    /* ── Product cards ── */
     .product-list {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-
     .product-card {
       background: #1a1d27;
       border: 1px solid #2d3048;
@@ -59,64 +157,56 @@
       align-items: center;
       gap: 16px;
     }
-
     .product-img {
-      width: 56px;
-      height: 56px;
+      width: 52px; height: 52px;
       border-radius: 8px;
       object-fit: cover;
       flex-shrink: 0;
       background: #0f1117;
       border: 1px solid #2d3048;
     }
-
     .product-icon {
-      width: 56px;
-      height: 56px;
+      width: 52px; height: 52px;
       border-radius: 8px;
       background: #0f1117;
       border: 1px solid #2d3048;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       flex-shrink: 0;
     }
-
-    .product-body {
-      flex: 1;
-      min-width: 0;
+    .product-body { flex: 1; min-width: 0; }
+    .product-sku {
+      font-size: 10px;
+      font-family: monospace;
+      color: #475569;
+      margin-bottom: 3px;
     }
-
     .product-name {
       font-size: 15px;
       font-weight: 600;
       color: #e2e8f0;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
-
     .product-desc {
       font-size: 12px;
       color: #64748b;
-      line-height: 1.5;
       margin-bottom: 8px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .product-price {
       font-size: 13px;
       font-weight: 600;
       color: #f7931a;
     }
-
     .product-price .sat-label {
       font-weight: 400;
       color: #94a3b8;
       margin-left: 2px;
     }
-
     .btn-buy {
       background: #f7931a;
       color: #000;
@@ -132,19 +222,11 @@
     }
     .btn-buy:hover { opacity: .85; }
 
-    .hint {
-      text-align: center;
-      margin-top: 28px;
-      font-size: 12px;
-      color: #334155;
-    }
-    .hint a { color: #f7931a; text-decoration: none; }
-
     .loading {
       text-align: center;
       color: #475569;
       font-size: 13px;
-      padding: 40px 0;
+      padding: 32px 0;
     }
 
     /* ── Modal ── */
@@ -152,15 +234,12 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.7);
+      background: rgba(0,0,0,.75);
       z-index: 200;
       align-items: center;
       justify-content: center;
     }
-    .modal-backdrop.open {
-      display: flex;
-    }
-
+    .modal-backdrop.open { display: flex; }
     .modal-box {
       background: #1a1d27;
       border: 1px solid #2d3048;
@@ -171,7 +250,6 @@
       margin: 16px;
       position: relative;
     }
-
     .modal-close {
       position: absolute;
       top: 14px; right: 14px;
@@ -186,15 +264,6 @@
       align-items: center;
       justify-content: center;
     }
-
-    .modal-testnet-note {
-      margin-top: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #eab308;
-      text-align: center;
-    }
-
     .modal-product-name {
       font-size: 14px;
       font-weight: 600;
@@ -202,17 +271,60 @@
       margin-bottom: 16px;
       padding-right: 32px;
     }
+    .modal-testnet-note {
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #eab308;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="testnet-bar">⚠ TESTNET — This is a demo. No real Bitcoin.</div>
 
+  <nav class="nav">
+    <span class="nav-brand">FunkPay</span>
+    <a href="/" class="nav-link active">Home</a>
+    <a href="/products" class="nav-link">Products</a>
+  </nav>
+
   <div class="container">
-    <h1>FunkPay Test Shop</h1>
-    <div class="product-list" id="product-list">
-      <div class="loading">Loading products…</div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-tag">Testnet Demo</div>
+      <h1>AI-native Bitcoin payments</h1>
+      <p>
+        This shop demonstrates how an AI agent can autonomously purchase products
+        using Bitcoin — no human interaction required. The agent receives a SKU in
+        the prompt, creates an invoice on this server, sends the payment, and waits
+        for confirmation on-chain.
+      </p>
+
+      <div class="flow-box">
+        <span class="kw">Agent</span>: "buy product <span class="str">FUNK-002</span> on shop.funkpay.dev"<br>
+        → <span class="kw">create_invoice</span>(merchant_url, sku=<span class="str">"FUNK-002"</span>)&nbsp;&nbsp;<span style="color:#334155"># merchant resolves price</span><br>
+        → <span class="kw">send_payment</span>(address, amount_sat)<br>
+        → <span class="kw">wait_for_payment</span>(payment_id)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#334155"># confirmed on-chain</span>
+      </div>
+
+      <div class="links">
+        <a class="link-btn" href="https://github.com/lucarocchi/funkpayai" target="_blank" rel="noopener">
+          ⬡ funkpayai — AI wallet + MCP server
+        </a>
+        <a class="link-btn" href="https://github.com/lucarocchi/btcfunkpay" target="_blank" rel="noopener">
+          ⬡ btcfunkpay — merchant payment engine
+        </a>
+      </div>
     </div>
-    <p class="hint">Powered by <a href="https://funkpay.dev">FunkPay</a> · testnet demo</p>
+
+    <!-- Products -->
+    <div class="section-title">Available products</div>
+    <div class="product-list" id="product-list">
+      <div class="loading">Loading…</div>
+    </div>
+
   </div>
 
   <!-- Payment modal -->
@@ -230,21 +342,15 @@
 
     function esc(s) {
       return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     }
 
-    // Load products
     fetch('/products')
       .then(r => r.json())
       .then(products => {
         const list = document.getElementById('product-list')
-        if (!products.length) {
-          list.innerHTML = '<div class="loading">No products available.</div>'
-          return
-        }
+        if (!products.length) { list.innerHTML = '<div class="loading">No products available.</div>'; return }
         list.innerHTML = products.map(p => {
           const thumb = p.image
             ? `<img class="product-img" src="${esc(p.image)}" alt="${esc(p.name)}">`
@@ -253,38 +359,29 @@
             <div class="product-card">
               ${thumb}
               <div class="product-body">
+                <div class="product-sku">${esc(p.sku)}</div>
                 <div class="product-name">${esc(p.name)}</div>
                 <div class="product-desc">${esc(p.description)}</div>
-                <div class="product-price">
-                  ${Number(p.price_sat).toLocaleString()}
-                  <span class="sat-label">sat</span>
-                </div>
+                <div class="product-price">${Number(p.price_sat).toLocaleString()}<span class="sat-label">sat</span></div>
               </div>
-              <button class="btn-buy"
-                data-sku="${esc(p.sku)}"
-                data-name="${esc(p.name)}"
-                data-sat="${p.price_sat}">Pay with Bitcoin</button>
+              <button class="btn-buy" data-sku="${esc(p.sku)}" data-name="${esc(p.name)}" data-sat="${p.price_sat}">
+                Pay with Bitcoin
+              </button>
             </div>`
         }).join('')
 
         list.querySelectorAll('.btn-buy').forEach(btn => {
-          btn.addEventListener('click', () => {
-            openPayment(btn.dataset.sku, btn.dataset.name, parseInt(btn.dataset.sat))
-          })
+          btn.addEventListener('click', () => openPayment(btn.dataset.sku, btn.dataset.name, parseInt(btn.dataset.sat)))
         })
       })
       .catch(() => {
-        document.getElementById('product-list').innerHTML =
-          '<div class="loading">Could not load products.</div>'
+        document.getElementById('product-list').innerHTML = '<div class="loading">Could not load products.</div>'
       })
 
-    // Payment modal
     function openPayment(sku, name, priceSat) {
       document.getElementById('modal-title').textContent = name
-
       const widget = document.getElementById('modal-widget')
       widget.innerHTML = ''
-
       const div = document.createElement('div')
       div.id = 'funkpay'
       div.dataset.server = 'https://shop.funkpay.dev'
@@ -292,13 +389,9 @@
       div.dataset.label = `${name} (${sku})`
       div.dataset.theme = 'dark'
       widget.appendChild(div)
-
-      // Inject fresh script — funkpay.js checks readyState and calls _auto() immediately
-      // since the page is already loaded. Cache-bust to force re-execution.
       const s = document.createElement('script')
       s.src = '/static/funkpay.js?v=' + Date.now()
       widget.appendChild(s)
-
       document.getElementById('modal').classList.add('open')
     }
 
