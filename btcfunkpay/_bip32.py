@@ -1,7 +1,7 @@
 """
 Pure-stdlib BIP32/BIP84 address derivation.
-Accepts xpub/zpub at the account level (m/84'/0'/0') and derives
-P2WPKH (bc1q...) child addresses without any external dependencies.
+Accepts xpub/zpub (mainnet) and tpub/vpub (testnet) at the account level
+(m/84'/0'/0') and derives P2WPKH child addresses without external dependencies.
 """
 from __future__ import annotations
 
@@ -16,8 +16,10 @@ _Gx = 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
 _Gy = 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8
 _G = (_Gx, _Gy)
 
-_XPUB_VERSION = bytes.fromhex("0488B21E")
-_ZPUB_VERSION = bytes.fromhex("04B24746")
+_XPUB_VERSION  = bytes.fromhex("0488B21E")  # mainnet xpub
+_ZPUB_VERSION  = bytes.fromhex("04B24746")  # mainnet zpub
+_TPUB_VERSION  = bytes.fromhex("043587CF")  # testnet tpub
+_VPUB_VERSION  = bytes.fromhex("045F1CF6")  # testnet vpub
 
 # bech32 charset
 _CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
@@ -85,7 +87,7 @@ def parse_xpub(xpub_str: str) -> tuple[bytes, bytes]:
     """Return (pubkey_33, chain_code_32) from an xpub or zpub string."""
     data = _b58decode_check(xpub_str)
     version = data[:4]
-    if version not in (_XPUB_VERSION, _ZPUB_VERSION):
+    if version not in (_XPUB_VERSION, _ZPUB_VERSION, _TPUB_VERSION, _VPUB_VERSION):
         raise ValueError(f"Unsupported xpub version: {version.hex()}")
     # depth=data[4], fingerprint=data[5:9], index=data[9:13]
     chain_code = data[13:45]
