@@ -142,6 +142,38 @@ app.mount("/static", StaticFiles(directory=_STATIC_DIR), name="static")
 
 
 # --------------------------------------------------------------------------- #
+#  Product catalogue (merchant-side, shop.funkpay.dev only)                   #
+# --------------------------------------------------------------------------- #
+
+_PRODUCTS = {
+    "FUNK-001": {
+        "sku":         "FUNK-001",
+        "name":        "FunkPay Sticker Pack",
+        "description": "3 vinyl stickers — FunkPay, Bitcoin, AI Agent logos.",
+        "price_sat":   5_000,
+        "currency":    "sat",
+        "type":        "product",
+    },
+    "FUNK-002": {
+        "sku":         "FUNK-002",
+        "name":        "Monthly Dev Access",
+        "description": "One month of access to the FunkPay developer sandbox and testnet API.",
+        "price_sat":   50_000,
+        "currency":    "sat",
+        "type":        "subscription",
+    },
+    "FUNK-003": {
+        "sku":         "FUNK-003",
+        "name":        "FunkPay T-Shirt",
+        "description": "100% cotton T-shirt, orange print on black. Sizes S–XXL.",
+        "price_sat":   150_000,
+        "currency":    "sat",
+        "type":        "product",
+    },
+}
+
+
+# --------------------------------------------------------------------------- #
 #  Routes                                                                      #
 # --------------------------------------------------------------------------- #
 
@@ -153,6 +185,19 @@ def root(request: Request):
         path = _STATIC_DIR / "funkpay-landing.html"
         return HTMLResponse(path.read_text())
     return {"service": "btcfunkpay", "version": "1.0"}
+
+
+@app.get("/products")
+def list_products():
+    return list(_PRODUCTS.values())
+
+
+@app.get("/products/{sku}")
+def get_product(sku: str):
+    product = _PRODUCTS.get(sku.upper())
+    if product is None:
+        raise HTTPException(status_code=404, detail=f"Product not found: {sku}")
+    return product
 
 
 @app.get("/.well-known/funkpay.json")
